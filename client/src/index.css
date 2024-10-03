@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  height: 100vh;
+}
+
+.ql-editor {
+  font-size: 1.2rem;
+}
+
+.post-content p {
+  margin-bottom: 0.5rem;
+  word-wrap: break-word;
+}
+
+.post-content h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  font-family: sans-serif;
+  margin: 1.5rem 0;
+  word-wrap: break-word;
+}
+
+.post-content h2 {
+  font-size: 1.5rem;
+  font-family: sans-serif;
+  margin: 1.5rem 0;
+  word-wrap: break-word;
+}
+
+.post-content h3 {
+  font-size: 1.4rem;
+  font-family: sans-serif;
+  margin: 1.5rem 0;
+  word-wrap: break-word;
+}
+
+.post-content h4 {
+  font-size: 1.3rem;
+  font-family: sans-serif;
+  margin: 1.5rem 0;
+  word-wrap: break-word;
+}
+
+.post-content h5 {
+  font-size: 1.3rem;
+  font-family: sans-serif;
+  margin: 1.5rem 0;
+  word-wrap: break-word;
+}
+
+.post-content h6 {
+  font-size: 1.3rem;
+  font-family: sans-serif;
+  margin: 1.5rem 0;
+  word-wrap: break-word;
+}
+
+.post-content a {
+  color: rgb(73, 149, 199);
+  text-decoration: none;
+  word-wrap: break-word;
+}
+
+.post-content p code {
+  background-color: rgba(162, 165, 165, 0.318) !important;
+  border-radius: 6px;
+  font-size: 85%;
+  padding: 2px 4px;
+}
+
+.dark .post-content code {
+  background-color: rgba(118, 117, 117, 0.472) !important;
+  border-radius: 6px;
+  font-size: 85%;
+  padding: 2px 4px;
+}
+.post-content pre {
+  color: azure;
+  background-color: #151515ef;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  margin-bottom: 35px;
+  margin-top: 5px;
+  padding: 5px 10px;
+}
+.dark .post-content pre {
+  color: azure;
+  border: 1px solid gray !important;
+  background-color: rgba(74, 74, 74, 0.644);
+  border-radius: 6px;
+  white-space: pre-wrap;
+  margin-bottom: 35px;
+  margin-top: 5px;
+  padding: 5px 10px;
+}
+
+.post-content ul[data-checked="false"] > li::before {
+  content: "\2610";
+}
+
+.post-content ul,
+.post-content ol {
+  padding-left: 1.5em;
+}
+
+.post-content ul:not([data-checked]) > li {
+  list-style-type: disc;
+}
+.post-content ol:not([data-checked]) > li {
+  list-style-type: decimal-zero;
+}
+
+.post-content a:hover {
+  text-decoration: underline;
+}
+
+.dark .post-content a {
+  color: red;
+  word-wrap: break-word;
+}
+
+.post-card {
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.post-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0px 20px 20px 5px rgba(0, 0, 0, 0.2);
+}

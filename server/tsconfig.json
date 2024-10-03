@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Use the latest ECMAScript features
+    "module": "NodeNext", // Specify module code generation
+    "moduleResolution": "NodeNext", // Use Node's resolution algorithm
+    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
+    "forceConsistentCasingInFileNames": true,
+    "strict": true, // Enable strict type checking
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "outDir": "./dist", // Output directory for compiled JavaScript files
+    "rootDir": "./src" // Root directory of input TypeScript files
+  },
+  "include": ["src/**/*", "@types/**/*"],
+  "exclude": ["node_modules", "dist"] // Exclude built files and node_modules
+}
