@@ -1,4 +1,10 @@
 import mongoose from "mongoose";
+import cors from "cors";
+import Express from "express";
+
+const app = Express();
+
+app.use(cors());
 
 const connectDB = async (): Promise<void> => {
   try {
