@@ -19,7 +19,7 @@ const RentedBooks = () => {
         if (res.ok) {
           setBooks(response.data.currentHoldingBookUser);
         }
-        console.log(response);
+        
 
         // const allBooksRes = await fetch("/api/books/get");
         // const allBooksResponse = await allBooksRes.json();

@@ -17,17 +17,19 @@ export default function DashboardComp() {
   const [lastMonthUsers, setLastMonthUsers] = useState(0);
   const [lastmonthBooks, setLastMonthBooks] = useState(0);
   const { currentUser } = useSelector((state) => state.user);
+  const [isLoadind, setLoading] = useState(false);
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoading(true);
         const res = await fetch("/api/user/getAllUser?limit=5");
         const response = await res.json();
-console.log(response);
 
         if (res.ok) {
           setUsers(response.data.users);
           setTotalUsers(response.data.totalUsers);
           setLastMonthUsers(response.data.lastMonthUsers);
+          setLoading(false);
         }
       } catch (error) {
         console.log(error.message);
@@ -35,13 +37,15 @@ console.log(response);
     };
     const fetchBooks = async () => {
       try {
-        const res = await fetch("/api/books/get?limit=5");
+        setLoading(true);
+        const res = await fetch("/api/books/get?limit=5&recentBooks=true");
         const response = await res.json();
         
         if (res.ok) {
           setBooks(response.data.books);
           setTotalBooks(response.data.totalBooks);
           setLastMonthBooks(response.data.lastMonthBooks);
+          setLoading(false);
         }
       } catch (error) {
         console.log(error.message);
@@ -54,7 +58,6 @@ console.log(response);
     }
   }, [currentUser]);
 
-  console.log(users);
   
 
   return (
@@ -133,7 +136,7 @@ console.log(response);
               <Table.HeadCell>Category</Table.HeadCell>
             </Table.Head>
             {books &&
-              books.map((book) => (
+              books.reverse().map((book) => (
                 <Table.Body key={book._id} className="divide-y">
                   <Table.Row className="bg-white dark:border-gray-700 dark:bg-[rgb(14,16,19)]">
                     <Table.Cell>

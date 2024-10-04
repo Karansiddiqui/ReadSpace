@@ -1,12 +1,12 @@
-import { Button, Spinner } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BookCard from "../components/BookCard";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import {Spinner} from "../components/Spinner"
 export default function Search() {
   const [sidebarData, setSidebarData] = useState({
     searchTerm: "",
@@ -151,46 +151,46 @@ export default function Search() {
       </div>
       <div className="">
         <div className="sm:border-b">
-
-        {currentUser.data?.user?.isAdmin ? (
-          <div className="p-10 flex items-center hover:scale-105 duration-200 border-gray-300 justify-around ">
-            <button
-              onClick={() => navigate("/searchByDate")}
-              style={{
-                transform: "rotate(2deg)",
-                padding: "0.2rem 1.2rem",
-                borderRadius: "5% 20% 25% 20%",
-                fontSize: "1.5rem",
-                position: "relative",
-                overflow: "hidden", 
-              }}
-              className="relative text-red-700 transition-all duration-200 py-2 px-6 hover:shadow-none transform hover:scale-105 "
-            >
-              Search Past issued books or Current issued books by Date Range
-              <span className="absolute inset-0 rounded-[5%_20%_25%_20%] border-2 border-red-700 opacity-75 transform translate-x-1 translate-y-1" />
-              <span className="absolute inset-0 rounded-[5%_20%_25%_20%] border-2 border-red-700 opacity-50 transform translate-x-1 -translate-y-1" />
-            </button>
-          </div>
-        ) : (
-          <div>
-            <h1 className=" text-3xl pl-8 font-semibold sm:border-b border-gray-500 p-3 mt-5">
-              Books Results:
-            </h1>
-          </div>
-        )}
+          {currentUser.data?.user?.isAdmin ? (
+            <div className="p-10 flex items-center hover:scale-105 duration-200 border-gray-300 justify-around ">
+              <button
+                onClick={() => navigate("/searchByDate")}
+                style={{
+                  transform: "rotate(2deg)",
+                  padding: "0.2rem 1.2rem",
+                  borderRadius: "5% 20% 25% 20%",
+                  fontSize: "1.5rem",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+                className="relative text-red-700 transition-all border-red-700 hover:bg-red-700 hover:text-white shadow duration-200 py-2 px-6 hover:shadow-none transform hover:scale-105 "
+              >
+                Search Past issued books or Current issued books by Date Range
+                <span className="absolute inset-0 rounded-[5%_20%_25%_20%] border-2 border-red-700 opacity-75 transform translate-x-1 translate-y-1" />
+                <span className="absolute inset-0 rounded-[5%_20%_25%_20%] border-2 border-red-700 opacity-50 transform translate-x-1 -translate-y-1" />
+              </button>
+            </div>
+          ) : (
+            <div>
+              <h1 className=" text-3xl pl-8 font-semibold sm:border-b border-gray-500 p-3 mt-5">
+                Books Results:
+              </h1>
+            </div>
+          )}
         </div>
 
-        <div className="p-3 flex flex-wrap gap-8 w-full mx-auto items-center justify-center">
           {!loading && books.length === 0 && (
-            <p className="text-xl text-gray-500">No books found.</p>
+            <p className="text-xl w-[85vw] h-[85vh] flex items-center justify-center text-gray-500">No books found.</p>
           )}
           {loading && (
-            <p className="text-xl text-gray-500 flex items-center justify-center h-[600px] w-[1600px]">
-              <Spinner size="xl" />
-            </p>
+            <div className="w-[85vw]">
+           <Spinner />
+           </div> 
           )}
+        <div className="p-3 flex flex-wrap w-[85vw] gap-8 mx-auto items-center justify-center">
           {!loading &&
-            books.map((book) => <BookCard key={book._id} book={book} />)}
+            books.map((book) => <BookCard key={book._id} book={book} />)
+          }
         </div>
       </div>
     </div>

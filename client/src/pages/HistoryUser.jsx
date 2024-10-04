@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import BookCard from "../components/BookCard";
 import { toast } from "react-toastify";
+import { Spinner } from "../components/Spinner";
 
 const UserHistory = () => {
   const [loading, setLoading] = useState(true);
@@ -70,7 +71,7 @@ const UserHistory = () => {
 
 
   if (error) return <div>Error: {error}</div>;
-
+  if (loading) return  <Spinner />
   return (
     <div className="container mx-auto p-6">
       {!currentUser.data.user?.isAdmin ? (

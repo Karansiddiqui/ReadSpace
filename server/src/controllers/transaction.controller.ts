@@ -6,6 +6,7 @@ import { ApiError } from "../utils/ApiError.js";
 import User from "../models/user.schema.js";
 import Book from "../models/book.schema.js";
 import mongoose from "mongoose";
+import { parse } from "path";
 
 function currentDate(): Date {
   let time = new Date();
@@ -186,7 +187,9 @@ const findBookByUserAndDateRange = asyncHandler(
     let firstDateParsed: Date | null = null;
     let secondDateParsed: Date | null = null;
 
-    const today = new Date();
+    const today = currentDate();
+    // console.log(today);
+
     if (rangeType === "today") {
       firstDateParsed = new Date();
       secondDateParsed = new Date();
@@ -199,6 +202,9 @@ const findBookByUserAndDateRange = asyncHandler(
           throw new ApiError(400, "First date must be a string.");
         }
         firstDateParsed = parseDate(firstDate);
+        if (firstDateParsed && firstDateParsed > currentDate()) {
+          throw new ApiError(400, "Issue date must be earlier than today.");
+        }
         if (!firstDateParsed) {
           throw new ApiError(
             400,
@@ -211,7 +217,12 @@ const findBookByUserAndDateRange = asyncHandler(
         if (typeof secondDate !== "string") {
           throw new ApiError(400, "Second date must be a string.");
         }
+
         secondDateParsed = parseDate(secondDate);
+        if (secondDateParsed && secondDateParsed > currentDate()) {
+          throw new ApiError(400, "Return date must be earlier than today.");
+        }
+
         if (!secondDateParsed) {
           throw new ApiError(
             400,
@@ -225,12 +236,12 @@ const findBookByUserAndDateRange = asyncHandler(
       if (firstDateParsed > secondDateParsed) {
         throw new ApiError(
           400,
-          "Invalid date range. First date must be earlier than the second date."
+          "First date must be earlier than the second date."
         );
       }
     }
 
-    // console.log(firstDateParsed, secondDateParsed);
+    console.log(firstDateParsed, secondDateParsed);
 
     const query: any = {};
 
@@ -241,8 +252,6 @@ const findBookByUserAndDateRange = asyncHandler(
     } else if (secondDateParsed) {
       query.issueDate = { $lte: secondDateParsed };
     }
-
-    // console.log(query);
 
     const transactions = await Transaction.find(query)
       .populate("bookId")
@@ -265,20 +274,20 @@ const findBookByUserAndDateRange = asyncHandler(
   }
 );
 
-// Function to parse the date in DD-MM-YY format
 const parseDate = (dateStr: string): Date | null => {
   const parts = dateStr.split("/");
-  if (parts.length !== 3) return null; // Ensure we have exactly 3 parts
+  if (parts.length !== 3) return null;
   const [day, month, year] = parts;
 
   const fullYear = year.length === 2 ? `20${year}` : year;
 
-  const date = new Date(`${fullYear}-${month}-${day}`);
+  const paddedMonth = String(month).padStart(2, "0");
+  const paddedDay = String(day).padStart(2, "0");
+
+  const date = new Date(`${fullYear}-${paddedMonth}-${paddedDay}`);
 
   return isNaN(date.getTime()) ? null : date;
 };
-
-// Function to parse the date in DD-MM-YY format
 
 // Return a book
 const returnBook = asyncHandler(async (req: Request, res: Response) => {

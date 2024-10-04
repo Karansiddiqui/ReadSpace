@@ -28,7 +28,7 @@ export default function BookCard({ book, transactionId, issueDate }) {
         const response = await res.json();
 
         setTotalRentByBook(response.data.totalRent);
-        console.log("total", response);
+        
       } catch (error) {
         console.error("Failed to fetch transaction data:", error);
       }
@@ -52,11 +52,11 @@ export default function BookCard({ book, transactionId, issueDate }) {
         },
         body: JSON.stringify({ bookId, days }),
       });
+      if (res.ok) setModalOpen(false);
 
       const response = await res.json();
       if (res.ok) {
         toast.success(response.message);
-        setModalOpen(false);
       } else {
         toast.error(
           (response.message === "Invalid Access Token" && "Please Login") ||
@@ -70,12 +70,12 @@ export default function BookCard({ book, transactionId, issueDate }) {
       setModalOpen(false);
     }
   };
-  
+
   const openModal = (transactionId, rentAmount) => {
     setTotalRent(rentAmount);
     setSelectedTransaction(transactionId);
-    toast.error("Please Login");
-    currentUser && setModalOpen(true);
+    
+    currentUser ? (setModalOpen(true)) :(toast.error("Please Login"));
   };
 
   const calculateDaysLeft = () => {

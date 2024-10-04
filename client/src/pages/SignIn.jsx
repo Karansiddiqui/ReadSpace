@@ -44,8 +44,7 @@ export default function SignIn() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log(data);
-      
+
       if (data.success === false) {
         dispatch(signInFailure(data.message));
       }
@@ -58,12 +57,12 @@ export default function SignIn() {
       dispatch(signInFailure(err.message));
     }
   };
-  
+
   useEffect(() => {
     let timeoutId;
     if (errorMessage) {
       timeoutId = setTimeout(() => {
-        dispatch(signInFailure(null)); 
+        dispatch(signInFailure(null));
       }, 2000);
     }
     return () => clearTimeout(timeoutId);
@@ -78,8 +77,10 @@ export default function SignIn() {
             Space
           </Link>
           <p className="text-sm mt-5">
-            This is a demo project. You can sign in with email <strong className=" text-green-500">user@gmail.com</strong> and password <strong className=" text-green-500">1234 </strong> 
-           or with Google
+            This is a demo project. You can sign in with email{" "}
+            <strong className=" text-green-500">user@gmail.com</strong> and
+            password <strong className=" text-green-500">1234 </strong>
+            or with Google
           </p>
         </div>
 
@@ -131,7 +132,6 @@ export default function SignIn() {
               Sign Up
             </Link>
           </div>
-
 
           {errorMessage && (
             <Alert className="mt-5" color="failure">

@@ -22,9 +22,9 @@ function FooterCom() {
             >
               <div className="flex">
                 <div className="flex items-center space-x-2">
-                 <img className="w-10 h-10" src="../../public/image.png"></img>
+                  <img className="w-10 h-10" src="/image.png"></img>
                   <div className="text-2xl font-bold text-gray-800 dark:text-white">
-                  ReadSpace
+                    ReadSpace
                   </div>
                 </div>
               </div>

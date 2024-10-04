@@ -85,10 +85,12 @@ export const getAllBooks = asyncHandler(async (req: Request, res: Response) => {
   if (!isNaN(maxRent)) {
     query.rentPerDay = { ...query.rentPerDay, $lte: maxRent };
   }
-
-  const books = await Book.find(query)
-    .sort({ createdAt: sortDirection })
-    .limit(limit);
+  let books;
+  req.query?.recentBooks && req.query?.limit
+    ? (books = await Book.find(query).sort({ createdAt: 1 }).limit(limit))
+    : (books = await Book.find(query)
+        .sort({ createdAt: sortDirection })
+        .limit(limit));
 
   if (!books || books.length === 0) {
     throw new ApiError(404, "No books found");
@@ -106,7 +108,7 @@ export const getAllBooks = asyncHandler(async (req: Request, res: Response) => {
     createdAt: { $gte: oneMonthAgo },
   });
 
-  const totalBooks = books.length;
+  const totalBooks = await Book.countDocuments();
   res
     .status(200)
     .json(

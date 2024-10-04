@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import BookCard from "../components/BookCard";
 import { toast } from "react-toastify";
 import { useLocation } from 'react-router-dom';
+import { Spinner } from "../components/Spinner";
 
 const AdminUserHistry = () => {
   const [loading, setLoading] = useState(true);
@@ -13,14 +13,15 @@ const AdminUserHistry = () => {
   const location = useLocation();
   const { userId } = location.state || {};
 
-  const { currentUser } = useSelector((state) => state.user);
-console.log(userId);
+  
+
+  
 
   useEffect(() => {
 
       
       const fetchBooks = async () => {
-        console.log("asdgsafsdfyuwrevbdsvgsdiuj");
+        
       try {
        
           const res = await fetch(
@@ -28,7 +29,7 @@ console.log(userId);
           );
           const response = await res.json();
 
-          console.log(response);
+          
           
 
           if (res.ok) {
@@ -78,7 +79,7 @@ console.log(userId);
     });
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Spinner/>
   if (error) return <div>Error: {error}</div>;
 
   return (

@@ -1,6 +1,7 @@
 import { RssFeed } from "@mui/icons-material";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import {Spinner} from "../components/Spinner"
 
 export const CurrentUser = () => {
   const location = useLocation();
@@ -33,7 +34,7 @@ export const CurrentUser = () => {
 
     fetchPastUsers();
   }, [book]);
-console.log(users);
+  
 
 
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -70,7 +71,7 @@ console.log(users);
     });
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return  <Spinner />
   if (error) return <div>Error: {error}</div>;
 
 
