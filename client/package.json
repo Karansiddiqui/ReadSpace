@@ -41,7 +41,8 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "redux-persist-expire": "^1.1.1",
-    "redux-persist-transform-expire": "^0.0.2"
+    "redux-persist-transform-expire": "^0.0.2",
+    "server": "file:.."
   },
   "devDependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",

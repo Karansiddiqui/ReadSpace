@@ -227,7 +227,7 @@ const findBookByUserAndDateRange = asyncHandler(
       }
     }
 
-    console.log(firstDateParsed, secondDateParsed);
+    // console.log(firstDateParsed, secondDateParsed);
 
     const query: any = {};
 
@@ -239,7 +239,7 @@ const findBookByUserAndDateRange = asyncHandler(
       query.issueDate = { $lte: secondDateParsed };
     }
 
-    console.log(query);
+    // console.log(query);
 
     const transactions = await Transaction.find(query)
       .populate("bookId")

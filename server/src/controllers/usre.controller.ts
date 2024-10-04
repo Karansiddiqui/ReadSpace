@@ -69,7 +69,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   if (!isPasswordCorrect) {
     throw new ApiError(401, "Invalid credentials");
   }
-  console.log(email, password);
+  // console.log(email, password);
 
   const accessToken = user.generateAccessToken();
   const loggedInUser = await User.findById(user._id).select("-password");

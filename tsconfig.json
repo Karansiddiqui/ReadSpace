@@ -7,9 +7,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true, // Enable strict type checking
     "skipLibCheck": true, // Skip type checking of declaration files
-    "outDir": "./dist", // Output directory for compiled JavaScript files
-    "rootDir": "./src" // Root directory of input TypeScript files
+    "outDir": "./server/dist", // Output directory for compiled JavaScript files
+    "rootDir": "./server/src" // Root directory of input TypeScript files
   },
-  "include": ["src/**/*", "@types/**/*"],
+  "include": ["server/src/**/*", "@types/**/*"],
   "exclude": ["node_modules", "dist"] // Exclude built files and node_modules
 }

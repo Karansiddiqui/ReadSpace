@@ -10,11 +10,11 @@
 
 
     "install-deps": "npm install && npm install --prefix client",
-    "dev:api": "nodemon",
+    "dev:api": "node server/dist/index.js",
     "dev:client": "npm --prefix client run dev",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
     "start": "node api/index.js",
-    "build": "npm install && npm install --prefix client && npm run build --prefix client"
+    "build": "npm install && npm run buildtsc && npm install --prefix client && npm run build --prefix client"
   },
   "keywords": [],
   "author": "",
