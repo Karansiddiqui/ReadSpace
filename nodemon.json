@@ -1,0 +1,6 @@
+{
+    "watch": ["server/src/**/*"],
+    "ext": "ts",    
+    "exec": "node --loader ts-node/esm server/src/index.ts"
+  }
+  

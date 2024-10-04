@@ -1,12 +1,20 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "/dist/index.js",
+  "main": "server/dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node /dist/index.js",
-    "dev": "nodemon"
+    "start": "node server/dist/index.js",
+    "dev": "nodemon",
+
+
+    "install-deps": "npm install && npm install --prefix client",
+    "dev:api": "nodemon",
+    "dev:client": "npm --prefix client run dev",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+    "start": "node api/index.js",
+    "build": "npm install && npm install --prefix client && npm run build --prefix client"
   },
   "keywords": [],
   "author": "",
