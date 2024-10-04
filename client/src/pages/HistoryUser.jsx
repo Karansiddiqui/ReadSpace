@@ -68,7 +68,7 @@ const UserHistory = () => {
     });
   };
 
-  if (loading) return <div>Loading...</div>;
+
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -78,7 +78,7 @@ const UserHistory = () => {
           <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-gray-200">
             Book Transaction History
           </h1>
-          {books.length > 0 ? (
+          {books.length > 0 && !loading ? (
             <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800">
               <div className="grid grid-cols-1 md:grid-cols-5 bg-gray-200 dark:bg-gray-700 p-4">
                 <div className="text-center text-gray-800 dark:text-gray-200">Book</div>
@@ -135,13 +135,14 @@ const UserHistory = () => {
                       state={{ transaction: transaction }}
                       className="text-blue-500 hover:underline dark:text-blue-300"
                     >
-                      Past History
+                      All History
                     </Link>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
+            
             <div className="text-center text-gray-700 dark:text-gray-300">
               No transaction history available for this user.
             </div>
@@ -156,8 +157,9 @@ const UserHistory = () => {
               ))}
             </div>
           ) : (
-            <div className="w-full h-screen flex justify-center pt-72 ">
-              <h1 className="text-3xl text-gray-500">Loading...</h1>
+            
+            <div className="flex items-center justify-center h-[90vh] w-[90vh]">
+ <h1 className="text-3xl text-gray-500">sdj...</h1>
             </div>
           )}
         </div>

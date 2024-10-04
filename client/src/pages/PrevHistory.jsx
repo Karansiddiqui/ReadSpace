@@ -20,14 +20,27 @@ const PrevHistry = () => {
     });
   };
 
+  
+
 
   const sortedTransactions = transaction.issueDate
-    .map((issueDate, index) => ({
+    .map((issueDate, index) => {
+
+      let status;
+
+      if (transaction.status === "rented" && transaction.returnDate.length > 1 && index < transaction.returnDate.length - 1) {
+        status = "rented";
+      } else if(transaction.status === "rented" && transaction.returnDate.length === 1) {
+        status = "rented";
+      } else {
+        status = "returned";
+      }
+      return {
       issueDate,
       returnDate: transaction.returnDate[index],
-      status: transaction.returnDate[index] == null ? "rented" : "returned",
+      status,
       rentAmount: transaction.rentAmount[index],
-    }))
+    }})
     .sort((a, b) => {
   
       if (a.status === "rented" && b.status === "returned") {
@@ -39,7 +52,7 @@ const PrevHistry = () => {
 
       const returnDateA = a.returnDate ? new Date(a.returnDate) : -Infinity;
       const returnDateB = b.returnDate ? new Date(b.returnDate) : -Infinity;
-      return returnDateB - returnDateA; // Descending order
+      return returnDateB - returnDateA; 
     });
 
   return (

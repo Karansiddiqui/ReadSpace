@@ -52,17 +52,7 @@ console.log(users);
         let rentedCount = 0;
 
         user.rentAmount.forEach((rent, index) => {
-          if (
-            user.status !== "rented" ||
-            rentedCount < user.rentAmount.length - 1
-          ) {
             revenue += rent;
-            console.log("revenue", rent);
-          }
-
-          if (user.status === "rented") {
-            rentedCount++;
-          }
         });
       });
 

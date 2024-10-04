@@ -121,7 +121,7 @@ export const getAllBooks = asyncHandler(async (req: Request, res: Response) => {
 export const getBookById = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const { id: bookId } = req.params;
-    console.log(bookId);
+    // console.log(bookId);
 
     if (!bookId) {
       throw new ApiError(400, "Book ID is required");
@@ -132,7 +132,7 @@ export const getBookById = asyncHandler(
     const book = await Book.findById(bookId);
 
     if (!book) {
-      console.log("book");
+      // console.log("book");
       throw new ApiError(404, "Book not found");
     }
 

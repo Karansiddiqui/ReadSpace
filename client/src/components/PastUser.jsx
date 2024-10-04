@@ -85,11 +85,6 @@ export const PastUser = () => {
     });
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  console.log(users[0]?.bookId.cover);
-
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-gray-200">
@@ -144,39 +139,40 @@ export const PastUser = () => {
           </div>
 
           {users
-  .slice()
-  .sort((a, b) => {
-    const aIssueDate = new Date(a.issueDate[0]);
-    const bIssueDate = new Date(b.issueDate[0]);
-    return bIssueDate - aIssueDate;
-  })
-  .map((user, userIndex) =>
-    user.returnDate.map((returnDateItem, returnIndex) => 
-      returnIndex < user.returnDate.length - 1 ? ( // Use ternary operator for conditional rendering
-        <div
-          key={`${userIndex}-${returnIndex}`}
-          className="grid grid-cols-1 sm:grid-cols-5 gap-4 p-4 border-b dark:border-gray-600"
-        >
-          <div className="text-center text-gray-700 dark:text-gray-300">
-            {user.userId.fullName}
-          </div>
-          <div className="text-center text-gray-700 dark:text-gray-300">
-            {user.userId.email}
-          </div>
-          <div className="text-center text-gray-700 dark:text-gray-300">
-            {formatDate(user.issueDate[returnIndex])}
-          </div>
-          <div className="text-center text-gray-700 dark:text-gray-300">
-            {formatDate(returnDateItem)} {/* Use returnDateItem directly */}
-          </div>
-          <div className="text-center text-green-400 dark:text-green-400 font-semibold">
-            {"Rs. " + user.rentAmount[returnIndex]}
-          </div>
-        </div>
-      ) : null // Return null if condition is not met
-    )
-  )}
-
+            .slice()
+            .sort((a, b) => {
+              const aIssueDate = new Date(a.issueDate[0]);
+              const bIssueDate = new Date(b.issueDate[0]);
+              return bIssueDate - aIssueDate;
+            })
+            .map((user, userIndex) =>
+              user.returnDate.map(
+                (returnDateItem, returnIndex) =>
+                  returnIndex < user.returnDate.length - 1 ? ( // Use ternary operator for conditional rendering
+                    <div
+                      key={`${userIndex}-${returnIndex}`}
+                      className="grid grid-cols-1 sm:grid-cols-5 gap-4 p-4 border-b dark:border-gray-600"
+                    >
+                      <div className="text-center text-gray-700 dark:text-gray-300">
+                        {user.userId.fullName}
+                      </div>
+                      <div className="text-center text-gray-700 dark:text-gray-300">
+                        {user.userId.email}
+                      </div>
+                      <div className="text-center text-gray-700 dark:text-gray-300">
+                        {formatDate(user.issueDate[returnIndex])}
+                      </div>
+                      <div className="text-center text-gray-700 dark:text-gray-300">
+                        {formatDate(returnDateItem)}{" "}
+                        {/* Use returnDateItem directly */}
+                      </div>
+                      <div className="text-center text-green-400 dark:text-green-400 font-semibold">
+                        {"Rs. " + user.rentAmount[returnIndex]}
+                      </div>
+                    </div>
+                  ) : null // Return null if condition is not met
+              )
+            )}
         </div>
       ) : (
         <div className="text-center text-gray-700 dark:text-gray-300">

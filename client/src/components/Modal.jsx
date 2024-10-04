@@ -17,6 +17,7 @@ export default function Modal({ rentAmount, onClose, onConfirm }) {
     setDays(isNaN(inputDays) ? "" : inputDays);
   };
 
+
   const handleConfirm = (e) => {
     e.preventDefault();
     onConfirm(days);

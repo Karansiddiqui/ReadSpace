@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import Modal from "./Modal";
@@ -11,6 +11,31 @@ export default function BookCard({ book, transactionId, issueDate }) {
 
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [totalRent, setTotalRent] = useState(0);
+
+  const [totalRentByBook, setTotalRentByBook] = useState(0);
+
+  useEffect(() => {
+    async function fetchTransactionData() {
+      try {
+        const res = await fetch(
+          `/api/transaction/userBooks?bookId=${book?._id}`
+        );
+
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status}`);
+        }
+
+        const response = await res.json();
+
+        setTotalRentByBook(response.data.totalRent);
+        console.log("total", response);
+      } catch (error) {
+        console.error("Failed to fetch transaction data:", error);
+      }
+    }
+
+    fetchTransactionData();
+  }, [book._id]);
 
   function currentDate() {
     let time = new Date();
@@ -45,11 +70,12 @@ export default function BookCard({ book, transactionId, issueDate }) {
       setModalOpen(false);
     }
   };
-
+  
   const openModal = (transactionId, rentAmount) => {
     setTotalRent(rentAmount);
     setSelectedTransaction(transactionId);
-    setModalOpen(true);
+    toast.error("Please Login");
+    currentUser && setModalOpen(true);
   };
 
   const calculateDaysLeft = () => {
@@ -131,7 +157,11 @@ export default function BookCard({ book, transactionId, issueDate }) {
                   </button>
                 )
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className=" flex flex-col gap-2">
+                  <div className="absolute top-0 left-1 text-green-500 font-semibold">
+                    ₹{totalRentByBook} Earnings
+                  </div>
+
                   <Link to={"/dashboard?tab=pastuser"} state={{ book }}>
                     <button className="border-2 border-red-700 px-8 py-1 font-semibold text-red-700 rounded-3xl hover:bg-red-700 hover:text-white transition">
                       Past User

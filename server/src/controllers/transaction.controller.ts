@@ -115,7 +115,7 @@ const getUserBook = asyncHandler(async (req: Request, res: Response) => {
 
           trans.status = "returned";
           await trans.save();
-          console.log("returned");
+          // console.log("returned");
         }
       }
     }
@@ -125,7 +125,7 @@ const getUserBook = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const pastUser = transaction.filter((field) => {
-      if (field?.status === "returned" || field?.returnDate.length > 0) {
+      if (field?.status === "returned" || field?.returnDate.length > 1) {
         return field;
       }
     });
@@ -136,13 +136,15 @@ const getUserBook = asyncHandler(async (req: Request, res: Response) => {
     });
     const totalPastUsers = pastUser.length;
     const totalCurrentUsers = currentHoldingBookUser.length;
-    console.log(
-      pastUser,
-      totalPastUsers,
-      currentHoldingBookUser,
-      transaction,
-      totalCurrentUsers
-    );
+
+    let totalRent = 0;
+    pastUser.forEach((trans) => {
+      totalRent = trans.rentAmount.reduce((a, b) => a + b, 0);
+    });
+
+    currentHoldingBookUser.forEach((item) => {
+      totalRent += item.rentAmount.reduce((a, b) => a + b);
+    });
 
     return res.status(200).json(
       new ApiResponse(
@@ -153,6 +155,7 @@ const getUserBook = asyncHandler(async (req: Request, res: Response) => {
           currentHoldingBookUser,
           transaction,
           totalCurrentUsers,
+          totalRent,
         },
         "User finded"
       )
@@ -328,6 +331,8 @@ const totalRentGeneratedByBook = asyncHandler(
     if (!transaction) {
       throw new ApiError(404, "No Transaction found");
     }
+
+    console.log(transaction);
 
     let totalRent = 0;
     transaction.forEach((item) => {

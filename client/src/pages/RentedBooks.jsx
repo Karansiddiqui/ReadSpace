@@ -1,23 +1,26 @@
 import { useEffect, useState, useMemo } from "react";
 import BookCard from "../components/BookCard";
-
+import { useSelector } from "react-redux";
 const RentedBooks = () => {
   const [books, setBooks] = useState([]);
   const [error, setError] = useState(null);
+  const {currentUser} = useSelector((state) => state.user);
   // const [allBooks, setAllBooks] = useState([]);
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         const res = await fetch(
-          `/api/transaction/userBooks?rented=${"rented"}`
+          `/api/transaction/userBooks?rented=${"rented"}&userId=${
+            currentUser?.data.user._id
+          }`
         );
         const response = await res.json();
         if (res.ok) {
           setBooks(response.data.currentHoldingBookUser);
         }
-        // console.log(response);
-        
+        console.log(response);
+
         // const allBooksRes = await fetch("/api/books/get");
         // const allBooksResponse = await allBooksRes.json();
         // if (allBooksResponse.success) {
