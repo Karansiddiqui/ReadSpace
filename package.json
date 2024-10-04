@@ -4,9 +4,9 @@
   "main": "server/dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node server/dist/index.js",
-    "dev": "nodemon",
+    "buildtsc": "tsc",
+    "startnode": "node server/dist/index.js",
+    "devnodemon": "nodemon",
 
 
     "install-deps": "npm install && npm install --prefix client",
