@@ -9,11 +9,13 @@ export default function Home() {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
+        setLoading(true);
         const res = await fetch("/api/books/get");
         const response = await res.json();
 
         if (res.ok) {
           setBooks(response.data.books);
+          setLoading(false);
         } else {
           console.log(response.message);
         }

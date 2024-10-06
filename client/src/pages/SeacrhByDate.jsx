@@ -73,14 +73,13 @@ export default function SearchByDate() {
         }
 
         if (!response.success) {
-          console.log(response.message.includes(
-            "Return date must be earlier than today."
-          ));
-          
-          response.message.includes(
-            "Return date must be earlier than today."
-          ) ? 
-          (setShouldFetchOnMount(false)) : (setBooks([]));
+          console.log(
+            response.message.includes("Return date must be earlier than today.")
+          );
+
+          response.message.includes("Return date must be earlier than today.")
+            ? setShouldFetchOnMount(false)
+            : setBooks([]);
 
           if (response.message.includes("Invelid Token")) {
             toast.error("Pleas login");
@@ -101,7 +100,10 @@ export default function SearchByDate() {
   return (
     <div className="flex flex-col">
       <div className="p-10 flex gap-4 items-center justify-center">
-        <form onSubmit={handleSubmit} className="flex items-center gap-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col md:flex-row items-center gap-4"
+        >
           <div className="flex items-center gap-4">
             <label className="text-xl">Start Date:</label>
             <DatePicker
@@ -121,23 +123,24 @@ export default function SearchByDate() {
               className="border border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded px-2 py-1"
             />
           </div>
-
-          <button
-            type="submit"
-            className="border-2 font-semibold border-blue-700 text-blue-700 rounded-full px-6 py-2 hover:bg-blue-700 hover:text-white transition duration-200"
-          >
-            Search
-          </button>
-          <div
-            onClick={() => {
-              setStartDate(null);
-              setEndDate(null);
-              setShouldFetchOnMount(true);
-              toast.info("Cleared");
-            }}
-            className="border-2 font-semibold border-red-700 text-red-700 rounded-full px-6 py-2 hover:bg-red-700 hover:text-white transition duration-200"
-          >
-            Clear
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="border-2 font-semibold border-blue-700 text-blue-700 rounded-full px-6 py-2 hover:bg-blue-700 hover:text-white transition duration-200"
+            >
+              Search
+            </button>
+            <div
+              onClick={() => {
+                setStartDate(null);
+                setEndDate(null);
+                setShouldFetchOnMount(true);
+                toast.info("Cleared");
+              }}
+              className="border-2 font-semibold border-red-700 text-red-700 rounded-full px-6 py-2 hover:bg-red-700 hover:text-white transition duration-200"
+            >
+              Clear
+            </div>
           </div>
         </form>
       </div>

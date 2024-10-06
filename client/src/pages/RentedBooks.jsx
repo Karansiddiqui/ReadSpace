@@ -1,15 +1,18 @@
 import { useEffect, useState, useMemo } from "react";
 import BookCard from "../components/BookCard";
 import { useSelector } from "react-redux";
+import { Spinner } from "../components/Spinner";
 const RentedBooks = () => {
   const [books, setBooks] = useState([]);
   const [error, setError] = useState(null);
   const {currentUser} = useSelector((state) => state.user);
+  const [loading, isLoading] = useState(false);
   // const [allBooks, setAllBooks] = useState([]);
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
+        isLoading(true);
         const res = await fetch(
           `/api/transaction/userBooks?rented=${"rented"}&userId=${
             currentUser?.data.user._id
@@ -18,6 +21,7 @@ const RentedBooks = () => {
         const response = await res.json();
         if (res.ok) {
           setBooks(response.data.currentHoldingBookUser);
+          isLoading(false);
         }
         
 
@@ -48,6 +52,10 @@ const RentedBooks = () => {
         )),
     [books]
   );
+
+  if (loading) {
+    return <Spinner/>
+  }
 
   return (
     <div className="max-w-[2380px] mx-auto p-3 flex flex-col gap-8 py-7">
