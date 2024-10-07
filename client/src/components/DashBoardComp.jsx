@@ -40,7 +40,7 @@ export default function DashboardComp() {
         setLoading(true);
         const res = await fetch("/api/books/get?limit=5&recentBooks=true");
         const response = await res.json();
-        
+
         if (res.ok) {
           setBooks(response.data.books);
           setTotalBooks(response.data.totalBooks);
@@ -57,8 +57,6 @@ export default function DashboardComp() {
       fetchBooks();
     }
   }, [currentUser]);
-
-  
 
   return (
     <div className="p-3 md:mx-auto">
@@ -101,9 +99,11 @@ export default function DashboardComp() {
         <div className="flex flex-col w-full md:w-auto shadow-md p-2 rounded-md dark:bg-[rgb(14,16,19)]">
           <div className="flex justify-between  p-3 text-sm font-semibold">
             <h1 className="text-center p-2">Recent users</h1>
-            <Button outline gradientDuoTone="pinkToOrange">
-              <Link to={"/dashboard?tab=users"}>See all</Link>
-            </Button>
+            <Link to={"/dashboard?tab=users"}>
+              <Button outline gradientDuoTone="pinkToOrange">
+                See all
+              </Button>
+            </Link>
           </div>
           <Table hoverable>
             <Table.Head>
