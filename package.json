@@ -7,8 +7,6 @@
     "buildtsc": "tsc",
     "startnode": "node server/dist/index.js",
     "devnodemon": "nodemon",
-
-
     "install-deps": "npm install && npm install --prefix client",
     "dev:api": "node server/dist/index.js",
     "dev:client": "npm --prefix client run dev",

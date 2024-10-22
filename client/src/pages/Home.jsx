@@ -59,14 +59,12 @@ export default function Home() {
         </div>
       </div>
       <div className="flex justify-between gap-6 pt-28 max-w-7xl items-center mx-auto">
-        <h2 className="text-2xl text-center font-serif">Recent Books</h2>
-        <Link
-          to="/search"
+        <div
           className="text-xs sm:text-lg font-bold text-green-400 hover:text-green-500 transition-all duration-300 ease-in-out text-center block mt-4 hacker-text"
         >
-          View all books
+          Books
           <span className="inline-block w-1 h-3 ml-1 bg-green-400 rounded blink"></span>
-        </Link>
+        </div>
       </div>
 
       <div className="max-w-[2380px] mx-auto p-3 flex flex-col gap-8 py-7">
