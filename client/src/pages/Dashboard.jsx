@@ -4,9 +4,10 @@ import DashSidebar from "../components/DashSidebar";
 import DashUsers from "../components/DashUsers";
 import RentedBooks from "./RentedBooks";
 import HistoryUser from "./HistoryUser";
-import DashboardComp from '../components/DashBoardComp'
+import DashboardComp from "../components/DashBoardComp";
 import { PastUser } from "../components/PastUser";
 import { CurrentUser } from "../components/CurrentUser";
+import AllHistoryAdmin from "./AllHistoryAdmin.jsx";
 
 export default function Dashboard() {
   const location = useLocation();
@@ -31,7 +32,8 @@ export default function Dashboard() {
       {tab === "users" && <DashUsers />}
       {tab === "pastuser" && <PastUser />}
       {tab === "currentuser" && <CurrentUser />}
-      {tab === "history" && <HistoryUser />} 
+      {tab === "history" && <HistoryUser />}
+      {tab === "allHistory" && <AllHistoryAdmin />}
     </div>
   );
 }

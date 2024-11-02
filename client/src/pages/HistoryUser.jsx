@@ -33,10 +33,11 @@ const UserHistory = () => {
             setBooks(rentedTransactions.concat(returnedTransactions));
           } else {
             setError(response.message || "Failed to fetch books");
-            toast.error((response.message) || "Failed to fetch books");
+            toast.error(response.message || "Failed to fetch books");
           }
 
           const res1 = await fetch(`/api/books/get`);
+
           const response1 = await res1.json();
 
           if (res1.ok) {
@@ -69,31 +70,40 @@ const UserHistory = () => {
     });
   };
 
+  // Calculate total rent
+  const totalRent = books.reduce((total, transaction) => {
+    const lastRentAmount = transaction.rentAmount[transaction.rentAmount.length - 1] || 0;
+    return total + Math.abs(lastRentAmount); // Use Math.abs to avoid negative values
+  }, 0);
 
   if (error) return <div>Error: {error}</div>;
-  if (loading) return  <Spinner />
+  if (loading) return <Spinner />;
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-4">
       {!currentUser.data.user?.isAdmin ? (
         <>
-          <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-gray-200">
+          <h1 className="text-3xl font-bold mb-4 text-center text-gray-800 dark:text-gray-200">
             Book Transaction History
           </h1>
           {books.length > 0 && !loading ? (
             <div className="bg-white shadow-lg rounded-lg dark:bg-gray-800">
-              <div className="grid grid-cols-1 md:grid-cols-5 bg-gray-200 dark:bg-gray-700 p-4">
-                <div className="text-center text-gray-800 dark:text-gray-200">Book</div>
+              {/* Display Total Rent */}
+              <div className="p-4 text-center">
+                <h2 className="text-2xl font-semibold">Total Rent: ₹{totalRent}</h2>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-200 dark:bg-gray-700 p-4 rounded-t-lg">
+                <div className="text-center text-gray-800 dark:text-gray-200 row-span-2">Book</div>
                 <div className="text-center text-gray-800 dark:text-gray-200">Issue Date</div>
                 <div className="text-center text-gray-800 dark:text-gray-200">Return Date</div>
                 <div className="text-center text-gray-800 dark:text-gray-200">Status</div>
-                <div className="text-center text-gray-800 dark:text-gray-200">Rent</div>
+                <div className="text-center text-gray-800 dark:text-gray-200">All History</div>
               </div>
               {books.map((transaction, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-5 border-t dark:border-gray-600 p-4 items-center">
-                  <div className="flex justify-center">
+                <div key={index} className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 border-t dark:border-gray-600 p-4 items-center">
+                  <div className="flex justify-center row-span-2">
                     {transaction.bookId?.cover ? (
                       <img
-                        className="w-[100px] h-[150px] object-cover"
+                        className="w-[60px] h-[90px] object-cover" // Adjusted size for mobile
                         src={transaction.bookId?.cover}
                         alt="Book Cover"
                       />
@@ -102,15 +112,13 @@ const UserHistory = () => {
                     )}
                   </div>
                   <div className="text-center text-gray-700 dark:text-gray-300">
-                    {formatDate(
-                      transaction.issueDate[transaction.issueDate.length - 1]
-                    )}
+                    {formatDate(transaction.issueDate[transaction.issueDate.length - 1])}
                   </div>
                   <div className="text-center text-gray-700 dark:text-gray-300">
                     {transaction.returnDate[transaction.returnDate.length - 1] !== null &&
                     transaction.status === "returned"
                       ? formatDate(transaction.returnDate[transaction.returnDate.length - 1])
-                      : formatDate(transaction.returnDate[transaction.returnDate.length - 1])}
+                      : "Not Returned Yet"}
                   </div>
                   <div
                     className={`font-semibold text-center ${
@@ -121,46 +129,36 @@ const UserHistory = () => {
                   >
                     {transaction.status === "rented" ? "Rented" : "Returned"}
                   </div>
-                  <div
-                    className={`font-semibold text-center ${
-                      transaction.status === "rented"
-                        ? "text-red-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {`-₹ ${transaction.rentAmount[transaction.rentAmount.length - 1]}`}
-                  </div>
-                  <div className="text-center">
+
+                  <div className="text-center text-xl">
                     <Link
                       to="/prevHistory"
                       state={{ transaction: transaction }}
                       className="text-blue-500 hover:underline dark:text-blue-300"
                     >
-                      All History
+                      <i className="ri-history-line"></i>
                     </Link>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            
             <div className="text-center text-gray-700 dark:text-gray-300">
               No transaction history available for this user.
             </div>
           )}
         </>
       ) : (
-        <div className="max-w-[2380px] mx-auto p-3 flex flex-col gap-8 py-7">
+        <div className="max-w-full mx-auto p-3">
           {allBooks && allBooks.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-center gap-14">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {allBooks.map((book) => (
                 <BookCard key={book._id} book={book} />
               ))}
             </div>
           ) : (
-            
-            <div className="flex items-center justify-center h-[90vh] w-[90vh]">
- <h1 className="text-3xl text-gray-500">sdj...</h1>
+            <div className="flex items-center justify-center h-[90vh] w-full">
+              <h1 className="text-3xl text-gray-500">No Books Available...</h1>
             </div>
           )}
         </div>

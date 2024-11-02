@@ -6,7 +6,9 @@ export default {
     "node_modules/flowbite-react/lib/esm/**/*.js",
   ],
   theme: {
-    extend: {},
+    extend: {
+      appearance: ['none'],
+    },
     screens: {
       'xs': '434px', 
       'sm': '640px',

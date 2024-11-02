@@ -77,7 +77,7 @@ export default function DashSidebar() {
         )}
         
         {currentUser.data.user.isAdmin ? 
-          (<Link to="/search">
+          (<Link to="/dashboard?tab=allHistory">
             <ListItem className="gap-3">
               <ListItemPrefix>
               <HistoryIcon className="h-5 w-5" />

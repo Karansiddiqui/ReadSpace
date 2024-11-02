@@ -6,6 +6,7 @@ export interface ITransaction extends Document {
   issueDate: [Date];
   returnDate: [Date];
   rentAmount: [number];
+  purchesdType: "rent" | "buy";
   status: "rented" | "returned";
 }
 
@@ -23,6 +24,11 @@ const transactionSchema: Schema<ITransaction> = new Schema(
     },
     issueDate: [{ type: Date, required: true }],
     returnDate: [{ type: Date, default: null }],
+    purchesdType: {
+      type: String,
+      enum: ["rent", "buy"],
+      required: true,
+    },
     status: { type: String, enum: ["rented", "returned"], default: "rented" },
     rentAmount: [{ type: Number }],
   },

@@ -6,18 +6,53 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResolve.js";
 import mongoose from "mongoose";
 
+type Fields = {
+  bookName?: string;
+  category?: string;
+  rentPerDay?: number;
+  publicationYear?: number;
+  topic?: string;
+  author?: string;
+  description?: string;
+  oneTimePrice?: number;
+};
+
 // Create a new book
 export const createBook = asyncHandler(async (req: Request, res: Response) => {
-  const { bookName, category, rentPerDay } = req.body;
+  const trimFields = (fields: Fields) => {
+    return Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [
+        key,
+        typeof value === "string" ? value.trim().replace(/\s+/g, ' ') : value,
+      ])
+    );
+  };
+
+  const {
+    bookName,
+    category,
+    rentPerDay,
+    publicationYear,
+    topic,
+    author,
+    description,
+    oneTimePrice,
+  } = trimFields(req.body);
   let coverUrl: string | null = null;
 
-  if (!rentPerDay || rentPerDay === undefined) {
-    throw new ApiError(400, "All fields are required");
+  if (typeof bookName !== "string") {
+    throw new ApiError(400, "bookName must be a string");
   }
-  if ([bookName, category].some((field) => field?.trim() === "" || !field)) {
+  // Validation for required fields
+  if (
+    [bookName, category, topic, author, description].some((field) => !field) ||
+    !rentPerDay ||
+    !publicationYear
+  ) {
     throw new ApiError(400, "All fields are required");
   }
 
+  // If an image file is provided, upload to Cloudinary
   if (req.file) {
     const uploadResult = await uploadOnCloudinary(req.file.path);
     if (uploadResult) {
@@ -25,32 +60,103 @@ export const createBook = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  const slug = req.body.bookName
+  // Generate a URL-friendly slug from the book name
+  const slug = bookName
     .split(" ")
     .join("-")
     .toLowerCase()
     .replace(/[^a-zA-Z0-9-]/g, "");
 
+  // Create a new book document
   const newBook = new Book({
     bookName,
+    author,
+    description,
     category,
     rentPerDay,
+    oneTimePrice,
+    publicationYear,
+    topic,
     cover: coverUrl,
     slug,
   });
 
+  // Save the new book to the database
   await newBook.save();
 
-  const checkBook = await Book.find({
-    bookName: "The Great Gatsby",
-    category: "Fiction",
-  });
+  // Check if the book was created successfully
+  const checkBook = await Book.findOne({ bookName, category });
   if (!checkBook) {
     throw new ApiError(409, "Book not created");
   }
+
   return res
     .status(201)
     .json(new ApiResponse(200, checkBook, "Book Created Successfully"));
+});
+
+export const updateBook = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  // Check if ID is provided
+  if (!id) {
+    throw new ApiError(400, "Book ID is required");
+  }
+
+  const {
+    bookName,
+    author,
+    description,
+    publicationYear,
+    topic,
+    category,
+    rentPerDay,
+    oneTimePrice,
+    cover,
+  } = req.body;
+
+  console.log(req);
+
+  let coverUrl: string | null = null;
+
+  if (req.file) {
+    const uploadResult = await uploadOnCloudinary(req.file.path);
+    console.log("uploadResult", uploadResult);
+    if (uploadResult) {
+      coverUrl = uploadResult.secure_url;
+    }
+  } else {
+    coverUrl = cover;
+  }
+
+  // Update book in the database
+  const updatedBook = await Book.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        bookName,
+        author,
+        description,
+        publicationYear,
+        topic,
+        category,
+        rentPerDay,
+        oneTimePrice,
+        cover: coverUrl,
+      },
+    },
+    { new: true }
+  );
+
+  // Check if book was found and updated
+  if (!updatedBook) {
+    throw new ApiError(404, "Book not found");
+  }
+
+  // Return updated book
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedBook, "Book updated successfully"));
 });
 
 export const getAllBooks = asyncHandler(async (req: Request, res: Response) => {
@@ -123,7 +229,6 @@ export const getAllBooks = asyncHandler(async (req: Request, res: Response) => {
 export const getBookById = asyncHandler(
   async (req: Request, res: Response): Promise<any> => {
     const { id: bookId } = req.params;
-    // console.log(bookId);
 
     if (!bookId) {
       throw new ApiError(400, "Book ID is required");
@@ -143,3 +248,23 @@ export const getBookById = asyncHandler(
       .json(new ApiResponse(200, book, "Book retrieved successfully"));
   }
 );
+
+export const deleteBook = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  console.log("id", id);
+
+  if (!id) {
+    throw new ApiError(400, "Book ID is required");
+  }
+  const book = await Book.findById(id);
+  if (!book) {
+    throw new ApiError(404, "Book not found");
+  }
+  const deletedBook = await Book.findByIdAndDelete(id);
+  if (!deletedBook) {
+    throw new ApiError(404, "Book not found");
+  }
+  res
+    .status(200)
+    .json(new ApiResponse(200, deletedBook, "Book deleted successfully"));
+});

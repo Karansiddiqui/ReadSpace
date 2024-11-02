@@ -4,6 +4,7 @@ const initialState = {
   currentUser: null,
   error: null,
   loading: false,
+  addToCart: false,
 };
 
 const userSlice = createSlice({
@@ -23,6 +24,12 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
       state.currentUser = null;
+    },
+    addToCartSuccess: (state, action) => {
+      state.addToCart = true;
+    },
+    addToCartFailure: (state, action) => {
+      state.addToCart = false;
     },
     updateStart: (state) => {
       state.loading = true;

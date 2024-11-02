@@ -8,7 +8,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute";
 import OnlyAdminPrivateRoute from "./components/OnlyAdminPrivateRoute";
-import CreatePost from "./pages/CreateBook";
+import CreatePost from "./pages/Create-updateBook";
 import Search from "./pages/Search";
 import NotFoundPage from "./pages/404PageNotFound";
 import RentedBooks from "./pages/RentedBooks";
@@ -16,9 +16,10 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PrevHistory from "./pages/PrevHistory";
 import ScrollToTop from "./components/ScrollToTop";
-import SearchByDate from "./pages/SeacrhByDate";
 import AdminUserHistry from "./pages/AdminUserHistry";
 import ScrollToTopWithClick from "./components/ScrollToTopWithClick";
+import BookDetails from "./pages/BookDetail";
+import Cart from "./pages/Cart";
 export default function App() {
   return (
     <BrowserRouter>
@@ -32,6 +33,8 @@ export default function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/search" element={<Search />} />
         <Route path="/rentedBooks" element={<RentedBooks />} />
+        <Route path="/book-detail/:id" element={<BookDetails />} />
+        <Route path="/cart" element={<Cart />} />
 
         {/* <Route path="/dashboardUser" element={<Dashboar />} /> */}
         <Route element={<PrivateRoute />}>
@@ -42,7 +45,6 @@ export default function App() {
 
         <Route element={<OnlyAdminPrivateRoute />}>
           <Route path="/create-book" element={<CreatePost />} />
-          <Route path="/searchByDate" element={<SearchByDate />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

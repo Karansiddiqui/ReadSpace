@@ -6,6 +6,7 @@ import { Request, Response, NextFunction } from "express";
 import { ApiError } from "./utils/ApiError.js";
 import userRoutes from "./routes/user.route.js";
 import userTransaction from "./routes/transaction.route.js";
+import userCartRoutes from "./routes/cart.route.js";
 import path from "path";
 
 const app: Application = express();
@@ -17,7 +18,7 @@ app.use(
   })
 );
 
-const __dirname = path.resolve();
+// const __dirname = path.resolve();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
@@ -29,8 +30,9 @@ app.use(cookieParser());
 app.use("/api/books", bookRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/transaction", userTransaction);
+app.use("/api/cart", userCartRoutes);
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
+// app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.use("*", (req, res) => {
   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));

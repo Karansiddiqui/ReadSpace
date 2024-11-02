@@ -1,7 +1,7 @@
 import { RssFeed } from "@mui/icons-material";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import {Spinner} from "../components/Spinner"
+import { Spinner } from "../components/Spinner";
 
 export const CurrentUser = () => {
   const location = useLocation();
@@ -34,8 +34,6 @@ export const CurrentUser = () => {
 
     fetchPastUsers();
   }, [book]);
-  
-
 
   const [totalRevenue, setTotalRevenue] = useState(0);
   useEffect(() => {
@@ -53,7 +51,7 @@ export const CurrentUser = () => {
         let rentedCount = 0;
 
         user.rentAmount.forEach((rent, index) => {
-            revenue += rent;
+          revenue += rent;
         });
       });
 
@@ -71,9 +69,8 @@ export const CurrentUser = () => {
     });
   };
 
-  if (loading) return  <Spinner />
+  if (loading) return <Spinner />;
   if (error) return <div>Error: {error}</div>;
-
 
   return (
     <div className="container mx-auto p-6">
