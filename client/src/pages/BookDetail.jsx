@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Spinner } from "../components/Spinner";
+import { ReactSpinner } from "../components/ReactSpinner";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import {
+  addToCartStart,
+  addToCartSuccess,
+  addToCartFailure,
+} from "../redux/cart/cartSlice.js";
+import { useSelector } from "react-redux";
+import { Spinner } from "flowbite-react";
 
 const BookDetails = () => {
   const { id } = useParams();
   const [book, setBook] = useState(null);
   const [topics, setTopics] = useState([]);
 
+  const dispatch = useDispatch();
+  const { cartItems, loading } = useSelector((state) => state.user);
+
   useEffect(() => {
     const fetchBook = async () => {
       const response = await fetch(`/api/books/getBookById/${id}`);
       const res = await response.json();
-      console.log(res.data);
+      // console.log(res.data);
 
       if (res.data && res.data.topic) {
         setBook(res.data);
@@ -23,50 +34,122 @@ const BookDetails = () => {
     fetchBook();
   }, [id]);
 
+  function cartInLocalStorage(book) {
+    const existingBooks = localStorage.getItem("book");
+    // console.log("existingBooks:", existingBooks);
+
+    // Parse the existing books or initialize as an empty array
+    let bookArray;
+    if (existingBooks) {
+      // console.log("Existing books:", existingBooks);
+
+      try {
+        bookArray = JSON.parse(existingBooks);
+        // Check if the parsed value is indeed an array
+        if (!Array.isArray(bookArray)) {
+          console.warn(
+            "Expected bookArray to be an array, but got:",
+            bookArray
+          );
+          bookArray = []; // Reset to an empty array if it's not
+        }
+      } catch (error) {
+        console.error("Error parsing book array from localStorage:", error);
+        bookArray = []; // Reset to an empty array in case of error
+      }
+    } else {
+      bookArray = []; // Initialize as an empty array if nothing is stored
+    }
+
+    // Add the new book ID to the array
+    // If the book already exists, do not add it again
+    if (bookArray.includes(book._id)) {
+      return;
+    }
+    bookArray.push(book._id);
+
+    // Save the updated array back to localStorage
+    localStorage.setItem("book", JSON.stringify(bookArray));
+  }
+
   const handleAddToCart = async () => {
+    console.log("cart added");
+    
     if (!book?._id || !book?.oneTimePrice) {
       toast.error("Book information is missing. Cannot add to cart.");
       return;
     }
 
-    try {
-      const response = await fetch("/api/cart/addItemToCart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          bookId: book._id,
-          price: book.oneTimePrice,
-        }),
+    dispatch(addToCartStart());
+    const response = await fetch("/api/cart/addItemToCart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bookId: book._id,
+        price: book.oneTimePrice,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log("error data", errorData);
+
+      const isExist = cartItems?.cartItem?.some((item) => {
+        const isMatch = item.bookId._id === book._id;
+        console.log(
+          "item.bookId._id === book._id:",
+          isMatch,
+          item.bookId._id,
+          book._id
+        );
+        return isMatch;
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Failed to add book to cart.");
+      cartInLocalStorage(book);
+      console.log("isExist", isExist);
+
+      if (isExist) {
+        dispatch(addToCartFailure("Book already in cart."));
+        toast.error("Book already in cart.");
+        return;
+      } else {
+        dispatch(
+          addToCartSuccess({
+            cartItem: [
+              ...cartItems.cartItem,
+              {
+                bookId: book,
+                price: book.oneTimePrice,
+                purchaseType: "buy",
+                _id: Math.random().toString(36).substr(2, 9),
+              },
+            ],
+          })
+        );
+        toast.success("Book added to cart successfully!");
         return;
       }
+    }
 
+    if (response.ok) {
       const data = await response.json();
 
-      if (data && data.success) {
-        toast.success("Book added to cart successfully!");
-      } else if (data && data.message) {
-        toast.success(data.message);
-      } else {
-        toast.error("Unexpected error: Could not add book to cart.");
-      }
-    } catch (error) {
-      // Handle network or other unexpected errors
-      console.error("Error adding book to cart:", error);
-      toast.error(
-        "Network error: Unable to connect to the server. Please try again later."
-      );
+      dispatch(addToCartSuccess({ cartItem: data.data.cartItem }));
+      console.log("data", data);
+      // dispatch(addToCartStart());
+      toast.success("Book added to cart successfully!");
+    } else {
+      toast.error("Unexpected error: Could not add book to cart.");
     }
   };
 
+  console.log("Cart Items:", cartItems);
+
+  console.log("Loading:", loading);
   if (!book) {
-    return <Spinner />;
+    return <ReactSpinner />;
   }
   return (
     <div className="min-h-[70vh] m-auto flex flex-col md:flex-row justify-center gap-16 mt-16 mb-16 max-w-[90vw] lg:max-w-[60vw]">
@@ -143,7 +226,7 @@ const BookDetails = () => {
           onClick={() => handleAddToCart(book._id)}
           className="w-fit mt-8 border-2 border-red-700 px-6 py-2 font-semibold rounded-lg bg-red-700 text-white transition hover:border-red-600 hover:bg-red-600"
         >
-          ADD TO CART
+          {loading ? <Spinner /> : "ADD TO CART"}
         </button>
 
         <div className="mt-8">

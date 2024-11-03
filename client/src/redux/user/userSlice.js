@@ -4,7 +4,6 @@ const initialState = {
   currentUser: null,
   error: null,
   loading: false,
-  addToCart: false,
 };
 
 const userSlice = createSlice({
@@ -25,11 +24,18 @@ const userSlice = createSlice({
       state.error = action.payload;
       state.currentUser = null;
     },
+    addToCartStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
     addToCartSuccess: (state, action) => {
-      state.addToCart = true;
+      state.loading = false;
+      state.cartItems.cartItem = action.payload.cartItem;
+      state.error = null;
     },
     addToCartFailure: (state, action) => {
-      state.addToCart = false;
+      state.loading = false;
+      state.error = action.payload;
     },
     updateStart: (state) => {
       state.loading = true;
@@ -80,7 +86,7 @@ export const {
   deleteUserStart,
   deleteUserSuccess,
   deleteUserFailure,
-  signoutSucess
+  signoutSucess,
 } = userSlice.actions;
 
 export default userSlice.reducer;

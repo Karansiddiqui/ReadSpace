@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
-import { Spinner } from "../components/Spinner";
+import { ReactSpinner } from "../components/ReactSpinner";
 
 const AdminUserHistry = () => {
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ const AdminUserHistry = () => {
     });
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <ReactSpinner />;
   if (error) return <div>Error: {error}</div>;
 
   return (

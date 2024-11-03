@@ -5,25 +5,23 @@ import { Types } from "mongoose";
 import Book, { IBook } from "../models/book.schema.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResolve.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const addItemToCart = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { bookId, price } = req.body;
-  const userId = req.user?._id;
+export const addItemToCart = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { bookId, price } = req.body;
+    const userId = req.user?._id;
 
-  try {
     if (!userId) {
-      res.status(401).json({
-        message: "Unauthorized: Please log in to add items to your cart",
-      });
-      return;
+      throw new ApiError(
+        401,
+        "Unauthorized: Please log in to add items to your cart"
+      );
     }
 
     if (!bookId || typeof price !== "number" || price <= 0) {
       res.status(400).json({ message: "Invalid book ID or price" });
-      return;
+      throw new ApiError(400, "Invalid book ID or price");
     }
 
     let cart = await Cart.findOne({ userId }).populate("cartItem");
@@ -32,8 +30,7 @@ export const addItemToCart = async (
     } else {
       const existingItem = await CartItem.findOne({ cartId: cart._id, bookId });
       if (existingItem) {
-        res.status(409).json({ message: "Book is already in your cart" });
-        return;
+        throw new ApiError(409, "Book is already in your cart");
       }
     }
 
@@ -50,23 +47,23 @@ export const addItemToCart = async (
     cart.totalItem += 1;
     await cart.save();
 
-    res.status(201).json({ message: "Item added to cart successfully", cart });
-  } catch (error) {
-    console.error("Error adding item to cart:", error);
-    res.status(500).json({ message: "Error adding item to cart", error });
+
+    const cartItems = (await Cart.findOne({ userId }).populate({
+      path: "cartItem",
+      populate: {
+        path: "bookId",
+        model: "Book",
+      },
+    })) as ICart;
+    res.status(200).json(new ApiResponse(200, cartItems, "Item added to cart"));
   }
-};
+);
 
-export const updateCartItem = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { cartItemId, rentDays, purchaseType } = req.body;
-  const userId = req.user?._id;
+export const updateCartItem = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { cartItemId, rentDays, purchaseType } = req.body;
+    const userId = req.user?._id;
 
-  console.log("rentDays", cartItemId, rentDays, purchaseType);
-
-  try {
     if (!userId) {
       res.status(401).json({
         message: "Unauthorized: Please log in to update items in your cart",
@@ -118,35 +115,26 @@ export const updateCartItem = async (
         }
         return total + (item.price || 0);
       }, 0);
-
-      console.log("cart", cart);
       await cart.save();
     }
 
     res
       .status(200)
       .json(new ApiResponse(200, cartItem, "Cart item updated successfully"));
-  } catch (error) {
-    console.error("Error updating cart item:", error);
-    throw new ApiError(500, "Error updating cart item");
   }
-};
+);
 
-export const removeItemFromCart = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { userId, cartItemId } = req.body;
+export const removeItemFromCart = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { cartItemId } = req.body;
+    const userId = req.user?._id;
 
-  try {
     const cartItem = await CartItem.findById(cartItemId);
 
     if (!cartItem) {
-      res.status(404).json({ message: "Cart item not found" });
-      return;
+      throw new ApiError(404, "Cart item not found");
     }
 
-    // Find the user's cart and remove the item
     const cart = await Cart.findOne({ userId });
 
     if (cart) {
@@ -157,21 +145,17 @@ export const removeItemFromCart = async (
       cart.totalItem -= 1;
       await cart.save();
       await CartItem.findByIdAndDelete(cartItemId);
-
-      res.status(200).json({ message: "Item removed from cart", cart });
+      res.status(200).json(new ApiResponse(200, [], "Item removed from cart"));
     } else {
-      res.status(404).json({ message: "Cart not found" });
+      throw new ApiError(404, "Cart not found");
     }
-  } catch (error) {
-    res.status(500).json({ message: "Error removing item from cart", error });
   }
-};
+);
 
-// Get the cart for a user
-export const getCart = async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?._id;
+export const getCart = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?._id;
 
-  try {
     if (!userId) {
       throw new ApiError(401, "Unauthorized: Please log in to view your cart");
     }
@@ -193,32 +177,27 @@ export const getCart = async (req: Request, res: Response): Promise<void> => {
     res
       .status(200)
       .json(new ApiResponse(200, cart, "Cart retrieved successfully"));
-  } catch (error) {
-    throw new ApiError(500, "Error getting cart");
   }
-};
+);
 
 // Clear all items from the cart
-export const clearCart = async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.body;
+export const clearCart = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user?._id;
 
-  try {
     const cart = await Cart.findOne({ userId });
 
     if (!cart) {
-      res.status(404).json({ message: "Cart not found" });
+      throw new ApiError(404, "Cart not found");
       return;
     }
 
-    // Delete all items in the cart and reset totals
     await CartItem.deleteMany({ cartId: cart._id });
     cart.cartItem = [];
     cart.totalPrice = 0;
     cart.totalItem = 0;
 
     await cart.save();
-    res.status(200).json({ message: "Cart cleared", cart });
-  } catch (error) {
-    res.status(500).json({ message: "Error clearing cart", error });
+    res.status(200).json(new ApiResponse(200, [], "Cart cleared successfully"));
   }
-};
+);

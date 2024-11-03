@@ -2,22 +2,19 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { signoutSucess } from "../redux/user/userSlice";
-import HistoryIcon from '@mui/icons-material/History';
+import {signoutSucess } from "../redux/user/userSlice";
+import HistoryIcon from "@mui/icons-material/History";
+import { addToCartSuccess } from "../redux/cart/cartSlice.js";
 import {
   Card,
   List,
   ListItem,
-  ListItemPrefix,
-  Chip,
+  ListItemPrefix
 } from "@material-tailwind/react";
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import {
-  AccountBox,
-  ChatBubbleOutline,
   Dashboard,
   Group,
-  LocalPostOffice,
   Logout,
 } from "@mui/icons-material";
 
@@ -27,7 +24,6 @@ export default function DashSidebar() {
   const { currentUser } = useSelector((state) => state.user);
   const [tab, setTab] = useState("");
   const { theme } = useSelector((state) => state.theme);
-
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -46,6 +42,7 @@ export default function DashSidebar() {
         console.log(data.message);
       } else {
         dispatch(signoutSucess());
+        dispatch(addToCartSuccess({ cartItem: [] }));
       }
     } catch (error) {
       console.log(error.message);
@@ -65,34 +62,35 @@ export default function DashSidebar() {
           </Link>
         )}
         {currentUser && !currentUser.data.user.isAdmin && (
-        <Link to="/dashboard?tab=rentedBooks">
-          <ListItem className="gap-3">
-            <ListItemPrefix>
-              <AutoStoriesIcon className="h-5 w-5" />
-            </ListItemPrefix>
-            Rented Books
-          </ListItem>
-        </Link>
-          
-        )}
-        
-        {currentUser.data.user.isAdmin ? 
-          (<Link to="/dashboard?tab=allHistory">
+          <Link to="/dashboard?tab=rentedBooks">
             <ListItem className="gap-3">
               <ListItemPrefix>
-              <HistoryIcon className="h-5 w-5" />
+                <AutoStoriesIcon className="h-5 w-5" />
+              </ListItemPrefix>
+              Rented Books
+            </ListItem>
+          </Link>
+        )}
+
+        {currentUser.data.user.isAdmin ? (
+          <Link to="/dashboard?tab=allHistory">
+            <ListItem className="gap-3">
+              <ListItemPrefix>
+                <HistoryIcon className="h-5 w-5" />
               </ListItemPrefix>
               History
             </ListItem>
-          </Link>) :(<Link to="/dashboard?tab=history">
-          <ListItem className="gap-3">
-            <ListItemPrefix>
-              <HistoryIcon className="h-5 w-5" />
-            </ListItemPrefix>
-            History
-          </ListItem>
-        </Link>)
-        }
+          </Link>
+        ) : (
+          <Link to="/dashboard?tab=history">
+            <ListItem className="gap-3">
+              <ListItemPrefix>
+                <HistoryIcon className="h-5 w-5" />
+              </ListItemPrefix>
+              History
+            </ListItem>
+          </Link>
+        )}
         {currentUser.data.user.isAdmin && (
           <Link to="/dashboard?tab=users">
             <ListItem className="gap-3">
@@ -103,7 +101,7 @@ export default function DashSidebar() {
             </ListItem>
           </Link>
         )}
-  
+
         <ListItem onClick={handleSignout} className="gap-3">
           <ListItemPrefix>
             <Logout className="h-5 w-5" />

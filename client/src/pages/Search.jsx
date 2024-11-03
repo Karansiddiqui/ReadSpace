@@ -1,12 +1,13 @@
 import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import BookCard from "../components/BookCard";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import "react-datepicker/dist/react-datepicker.css";
-import { Spinner } from "../components/Spinner";
+import { ReactSpinner } from "../components/ReactSpinner";
+import AdminBookCard from "../components/AdminBookCard";
+import UserBookCard from "../components/UserBookCard";
 export default function Search() {
   const [sidebarData, setSidebarData] = useState({
     searchTerm: "",
@@ -82,7 +83,10 @@ export default function Search() {
   return (
     <div className="flex flex-col md:flex-row">
       <div className="p-7 md:border-r md:min-h-screen border-gray-500">
-        <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+        <form
+          className="flex flex-wrap md:flex-col justify-center gap-8"
+          onSubmit={handleSubmit}
+        >
           <div className="flex items-center gap-2">
             <label className="whitespace-nowrap font-semibold">
               Search Term:
@@ -165,12 +169,18 @@ export default function Search() {
         )}
         {loading && (
           <div className="w-[85vw]">
-            <Spinner />
+            <ReactSpinner />
           </div>
         )}
-        <div className="p-3 flex flex-wrap w-[85vw] gap-8 mx-auto items-center justify-center">
+        <div className="p-3 flex flex-wrap gap-8 mx-auto items-center justify-center">
           {!loading &&
-            books.map((book) => <BookCard key={book._id} book={book} />)}
+            (currentUser?.data.user.isAdmin
+              ? books.map((book) => (
+                  <AdminBookCard key={book._id} book={book} />
+                ))
+              : books.map((book) => (
+                  <UserBookCard key={book._id} book={book} />
+                )))}
         </div>
       </div>
     </div>

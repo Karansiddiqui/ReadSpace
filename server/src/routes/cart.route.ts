@@ -17,8 +17,8 @@ router.patch("/update/:id", verifyJWT, updateCartItem);
 
 router.post("/addItemToCart", verifyJWT, addItemToCart);
 
-router.delete("/clearCart/:id", verifyJWT, clearCart);
+router.delete("/clearCart", verifyJWT, clearCart);
 
-router.delete("/removeItemFromCart/:id", verifyJWT, removeItemFromCart);
+router.delete("/removeItemFromCart", verifyJWT, removeItemFromCart);
 
 export default router;

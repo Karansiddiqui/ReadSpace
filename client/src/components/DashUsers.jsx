@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { Spinner } from "../components/Spinner";
+import { ReactSpinner } from "../components/ReactSpinner";
 
 export default function DashUsers() {
   const { currentUser } = useSelector((state) => state.user);
@@ -31,7 +31,7 @@ export default function DashUsers() {
       fetchUsers();
     }
   }, []);
-  if (isLoading) return <Spinner />;
+  if (isLoading) return <ReactSpinner />;
   return (
     <div className="table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500 mt-20">
       {currentUser?.data.user?.isAdmin && users.length > 0 ? (
@@ -93,7 +93,7 @@ export default function DashUsers() {
       ) : (
 
         <p className="text-xl text-gray-500 flex items-center justify-center h-[600px] w-[1600px]">
-          <Spinner size="xl" />
+          <ReactSpinner size="xl" />
         </p>
       )}
       {users.length === 0 && (

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {Spinner} from "../components/Spinner"
+import {ReactSpinner} from "../components/ReactSpinner"
 
 export const PastUser = () => {
   const location = useLocation();
@@ -87,7 +87,7 @@ export const PastUser = () => {
   };
 
 
-  if (loading) return  <Spinner/>
+  if (loading) return  <ReactSpinner/>
 
   return (
     <div className="container mx-auto p-6">

@@ -5,6 +5,7 @@ import { CiShoppingCart } from "react-icons/ci";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import { signoutSucess } from "../redux/user/userSlice";
+import { addToCartSuccess } from "../redux/cart/cartSlice.js";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { motion } from "framer-motion";
@@ -15,10 +16,13 @@ export default function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
+  const { cartItems } = useSelector((state) => state.cart);
   const { theme } = useSelector((state) => state.theme);
   const [searchTerm, setSearchTerm] = useState("");
   const [sort] = useState("");
   const [category] = useState("");
+
+  // console.log("home", cartItems);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -38,6 +42,7 @@ export default function Header() {
         console.log(data.message);
       } else {
         dispatch(signoutSucess());
+        dispatch(addToCartSuccess({ cartItem: [] }));
         navigate("/sign-in");
       }
     } catch (error) {
@@ -118,11 +123,18 @@ export default function Header() {
           )}
         </button>
 
-        <Link to="/cart">
-          <div className="ml-5 mr-5">
-            <CiShoppingCart className="w-8 h-8 cursor-pointer items-center" />
-          </div>
-        </Link>
+        {!currentUser?.data.user?.isAdmin && (
+          <Link to="/cart">
+            <div className="relative ml-5 mr-5 flex items-center justify-center">
+              <CiShoppingCart className=" h-10 w-12 cursor-pointer items-center" />
+              <span className="absolute text-sm font-bold text-gray-800 dark:text-white">
+                {cartItems?.cartItem.length === 0
+                  ? "0"
+                  : cartItems?.cartItem?.length}
+              </span>
+            </div>
+          </Link>
+        )}
 
         {currentUser ? (
           <Dropdown
@@ -182,7 +194,7 @@ export default function Header() {
               },
             },
           }}
-          className="flex gap-6"
+          className="flex flex-col sm:flex-row sm:gap-6"
         >
           <Link to={"/"}>
             <Navbar.Link
@@ -221,7 +233,7 @@ export default function Header() {
             </Link>
           )}
 
-          <Link to={"/about"}>
+          <Link to={"/search"}>
             <Navbar.Link
               active={path === "/about"}
               as={"div"}
@@ -234,7 +246,7 @@ export default function Header() {
                 }}
                 className="font-courier-new text-lg text-black dark:text-green-400"
               >
-                About
+                All Books
               </motion.span>
             </Navbar.Link>
           </Link>

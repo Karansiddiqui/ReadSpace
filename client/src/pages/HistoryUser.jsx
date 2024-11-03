@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import BookCard from "../components/BookCard";
 import { toast } from "react-toastify";
-import { Spinner } from "../components/Spinner";
+import { ReactSpinner } from "../components/ReactSpinner";
+import UserBookCard from "../components/UserBookCard";
 
 const UserHistory = () => {
   const [loading, setLoading] = useState(true);
@@ -77,7 +77,7 @@ const UserHistory = () => {
   }, 0);
 
   if (error) return <div>Error: {error}</div>;
-  if (loading) return <Spinner />;
+  if (loading) return <ReactSpinner />;
   return (
     <div className="container mx-auto p-4">
       {!currentUser.data.user?.isAdmin ? (
@@ -153,7 +153,7 @@ const UserHistory = () => {
           {allBooks && allBooks.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {allBooks.map((book) => (
-                <BookCard key={book._id} book={book} />
+                <UserBookCard key={book._id} book={book} />
               ))}
             </div>
           ) : (

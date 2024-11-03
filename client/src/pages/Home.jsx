@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import BookCard from "../components/BookCard";
 import { motion } from "framer-motion"; // Import motion
-
+import { useSelector } from "react-redux";
+import UserBookCard from "../components/UserBookCard";
+import AdminBookCard from "../components/AdminBookCard";
+import { addToCartSuccess } from "../redux/cart/cartSlice.js";
+import { useDispatch } from "react-redux";
 const AnimatedWord = ({ word, index }) => {
   return (
     <motion.span
@@ -19,19 +22,64 @@ export default function Home() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteBook, setDeleteBook] = useState("");
+  const { currentUser } = useSelector((state) => state.user);
+
+  const [currentPrices, setCurrentPrices] = useState({});
+  const { cartItems } = useSelector((state) => state.user);
+
+  console.log("Cart Items:", cartItems);
+  
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    addItemFromLocalStorage();
     const fetchBooks = async () => {
       try {
         setLoading(true);
         const res = await fetch("/api/books/get");
         const response = await res.json();
 
+        const responseCart = await fetch("/api/cart/get");
+        const resCart = await responseCart.json();
+
+        // console.log("Cart Items:", resCart.data.cartItem);
         if (res.ok) {
           setBooks(response.data.books);
+          console.log("books:", response);
+          
         } else {
           console.log(response.message);
         }
+
+        if (resCart.success) {
+          dispatch(addToCartSuccess(resCart.data));
+          localStorage.removeItem("book");
+          const initialPrices = {};
+          resCart.data.cartItem.forEach((item) => {
+            initialPrices[item._id] = {
+              purchaseType: item.purchaseType,
+              rentDays: item.rentDays,
+              price: item.price,
+            };
+          });
+          setCurrentPrices(initialPrices);
+          // setLoading(false);
+          // dispatch(addToCartSuccess(res.data));
+        } else {
+          const initialPrices = {};
+          cartItems.cartItem.forEach((item) => {
+            console.log(item);
+
+            initialPrices[item._id] = {
+              purchaseType: item.purchaseType,
+              rentDays: 1,
+              price: item.price,
+            };
+          });
+          setCurrentPrices(initialPrices);
+        }
+
       } catch (error) {
         console.log(error.message);
       } finally {
@@ -41,15 +89,55 @@ export default function Home() {
     fetchBooks();
   }, [deleteBook]);
 
+  const addItemFromLocalStorage = () => {
+    const bookIds = JSON.parse(localStorage.getItem("book"));
+
+    async function addBook(bookId) {
+      try {
+        const response = await fetch("/api/cart/addItemToCart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            bookId: bookId,
+            price: bookId.oneTimePrice,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add book to cart");
+        }
+
+        const data = await response.json();
+        dispatch(addToCartSuccess({ cartItem: data.data.cartItem }));
+        console.log("Book added to cart successfully:", data);
+      } catch (error) {
+        console.error("Error adding book to cart:", error);
+      }
+    }
+
+    if (bookIds && Array.isArray(bookIds)) {
+      bookIds.forEach((bookId) => {
+        addBook({ _id: bookId, oneTimePrice: 20 });
+      });
+    }
+  };
+
+  // currentUser?.data.user && addItemFromLocalStorage();
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 1100,
       behavior: "smooth",
     });
   };
+  console.log(books);
 
   const titleWords = "Discover Your Next Favorite Book".split(" ");
-  const descriptionWords = "Rent thousands of books across genres and interests".split(" ");
+  const descriptionWords =
+    "Rent thousands of books across genres and interests".split(" ");
 
   return (
     <div>
@@ -84,7 +172,7 @@ export default function Home() {
           </motion.div>
         </div>
       </motion.div>
-      
+
       <div className="flex justify-between gap-6 pt-28 max-w-7xl items-center mx-auto">
         <div className="text-xs sm:text-lg font-bold text-green-400 hover:text-green-500 transition-all duration-300 ease-in-out text-center block mt-4 hacker-text">
           Books
@@ -98,6 +186,7 @@ export default function Home() {
             <div className="spinner-border animate-spin inline-block w-12 h-12 border-4 rounded-full border-green-400 border-t-transparent"></div>
           </div>
         )}
+
         {books && books.length > 0 ? (
           <motion.div
             className="flex flex-wrap items-center justify-center gap-14"
@@ -112,7 +201,11 @@ export default function Home() {
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <BookCard book={book} setDeleteBook={setDeleteBook} />
+                {!currentUser?.data.user.isAdmin ? (
+                  <UserBookCard book={book} setDeleteBook={setDeleteBook} />
+                ) : (
+                  <AdminBook Card book={book} setDeleteBook={setDeleteBook} />
+                )}
               </motion.div>
             ))}
           </motion.div>

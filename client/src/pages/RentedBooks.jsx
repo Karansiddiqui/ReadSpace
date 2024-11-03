@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
-import BookCard from "../components/BookCard";
+import UserBookCard from "../components/UserBookCard";
 import { useSelector } from "react-redux";
-import { Spinner } from "../components/Spinner";
+import { ReactSpinner } from "../components/ReactSpinner";
 const RentedBooks = () => {
   const [books, setBooks] = useState([]);
   const [error, setError] = useState(null);
@@ -43,7 +43,7 @@ const RentedBooks = () => {
       books
         .filter((book) => book.status === "rented")
         .map((book) => (
-          <BookCard
+          <UserBookCard
             key={book._id}
             book={book.bookId}
             transactionId={book}
@@ -54,7 +54,7 @@ const RentedBooks = () => {
   );
 
   if (loading) {
-    return <Spinner/>
+    return <ReactSpinner/>
   }
 
   return (
