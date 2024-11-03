@@ -9,7 +9,7 @@ import expireReducer from "redux-persist-expire";
 const rootReducer = combineReducers({
   user: userReducer,
   theme: themeReducer,
-  cart: cartReducer
+  cart: cartReducer,
 });
 
 const persistConfig = {
@@ -20,16 +20,25 @@ const persistConfig = {
     expireReducer("user", {
       expireSeconds: 86400,
       expiredState: {
-        viewType: "list",
-        token: "",
+        currentUser: null,
+        error: null,
+        loading: false,
       },
       autoExpire: true,
     }),
     expireReducer("theme", {
       expireSeconds: 86400,
       expiredState: {
-        viewType: "list",
-        token: "",
+        theme: "light",
+      },
+      autoExpire: true,
+    }),
+    expireReducer("cart", {
+      expireSeconds: 86400,
+      expiredState: {
+        error: null,
+        cartLoading: false,
+        cartItems: null,
       },
       autoExpire: true,
     }),

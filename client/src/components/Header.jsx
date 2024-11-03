@@ -42,7 +42,7 @@ export default function Header() {
         console.log(data.message);
       } else {
         dispatch(signoutSucess());
-        dispatch(addToCartSuccess({ cartItem: [] }));
+        dispatch(addToCartSuccess(null));
         navigate("/sign-in");
       }
     } catch (error) {
@@ -128,7 +128,7 @@ export default function Header() {
             <div className="relative ml-5 mr-5 flex items-center justify-center">
               <CiShoppingCart className=" h-10 w-12 cursor-pointer items-center" />
               <span className="absolute text-sm font-bold text-gray-800 dark:text-white">
-                {cartItems?.cartItem.length === 0
+                {!cartItems
                   ? "0"
                   : cartItems?.cartItem?.length}
               </span>

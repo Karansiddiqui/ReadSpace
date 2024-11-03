@@ -4,7 +4,7 @@ import { motion } from "framer-motion"; // Import motion
 import { useSelector } from "react-redux";
 import UserBookCard from "../components/UserBookCard";
 import AdminBookCard from "../components/AdminBookCard";
-import { addToCartSuccess } from "../redux/cart/cartSlice.js";
+import { addToCartSuccess } from "../redux/cart/cartSlice";
 import { useDispatch } from "react-redux";
 const AnimatedWord = ({ word, index }) => {
   return (
@@ -25,10 +25,7 @@ export default function Home() {
   const { currentUser } = useSelector((state) => state.user);
 
   const [currentPrices, setCurrentPrices] = useState({});
-  const { cartItems } = useSelector((state) => state.user);
-
-  console.log("Cart Items:", cartItems);
-  
+  const { cartItems } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();
 
@@ -46,17 +43,17 @@ export default function Home() {
         // console.log("Cart Items:", resCart.data.cartItem);
         if (res.ok) {
           setBooks(response.data.books);
-          console.log("books:", response);
-          
         } else {
           console.log(response.message);
+          setBooks([]);
         }
 
         if (resCart.success) {
           dispatch(addToCartSuccess(resCart.data));
+
           localStorage.removeItem("book");
-          const initialPrices = {};
-          resCart.data.cartItem.forEach((item) => {
+          let initialPrices = {};
+          resCart?.data?.cartItem.forEach((item) => {
             initialPrices[item._id] = {
               purchaseType: item.purchaseType,
               rentDays: item.rentDays,
@@ -69,8 +66,6 @@ export default function Home() {
         } else {
           const initialPrices = {};
           cartItems.cartItem.forEach((item) => {
-            console.log(item);
-
             initialPrices[item._id] = {
               purchaseType: item.purchaseType,
               rentDays: 1,
@@ -79,9 +74,8 @@ export default function Home() {
           });
           setCurrentPrices(initialPrices);
         }
-
       } catch (error) {
-        console.log(error.message);
+        console.log(error);
       } finally {
         setLoading(false);
       }
@@ -112,7 +106,6 @@ export default function Home() {
 
         const data = await response.json();
         dispatch(addToCartSuccess({ cartItem: data.data.cartItem }));
-        console.log("Book added to cart successfully:", data);
       } catch (error) {
         console.error("Error adding book to cart:", error);
       }
@@ -133,7 +126,6 @@ export default function Home() {
       behavior: "smooth",
     });
   };
-  console.log(books);
 
   const titleWords = "Discover Your Next Favorite Book".split(" ");
   const descriptionWords =
@@ -204,7 +196,7 @@ export default function Home() {
                 {!currentUser?.data.user.isAdmin ? (
                   <UserBookCard book={book} setDeleteBook={setDeleteBook} />
                 ) : (
-                  <AdminBook Card book={book} setDeleteBook={setDeleteBook} />
+                  <AdminBookCard Card book={book} setDeleteBook={setDeleteBook} />
                 )}
               </motion.div>
             ))}

@@ -55,7 +55,7 @@ export const addItemToCart = asyncHandler(
         model: "Book",
       },
     })) as ICart;
-    res.status(200).json(new ApiResponse(200, cartItems, "Item added to cart"));
+    res.status(200).json(new ApiResponse(200, cartItems, "Item added to your cart"));
   }
 );
 
@@ -170,7 +170,7 @@ export const getCart = asyncHandler(
     if (!cart) {
       res
         .status(202)
-        .json(new ApiResponse(202, { cartItem: [] }, "Cart is empty"));
+        .json(new ApiResponse(202, null, "Cart is empty"));
       return;
     }
 

@@ -24,19 +24,6 @@ const userSlice = createSlice({
       state.error = action.payload;
       state.currentUser = null;
     },
-    addToCartStart: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-    addToCartSuccess: (state, action) => {
-      state.loading = false;
-      state.cartItems.cartItem = action.payload.cartItem;
-      state.error = null;
-    },
-    addToCartFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
     updateStart: (state) => {
       state.loading = true;
       state.error = null;

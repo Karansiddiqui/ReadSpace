@@ -2,8 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   error: null,
-  loading: false,
-  cartItems: { cartItem: [] },
+  cartLoading: false,
+  cartItems: null,
 };
 
 const cartSlice = createSlice({
@@ -11,18 +11,47 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCartStart: (state) => {
-      state.loading = true;
+      state.cartLoading = true;
       state.error = null;
     },
     addToCartSuccess: (state, action) => {
-        console.log("Action here", action.payload);
-        
-      state.loading = false;
-      state.cartItems.cartItem = action.payload.cartItem;
+      state.cartLoading = false;
+      state.cartItems = action.payload;
       state.error = null;
     },
     addToCartFailure: (state, action) => {
-      state.loading = false;
+      state.cartLoading = false;
+      state.error = action.payload;
+    },
+
+    removeItemFromCartStart: (state) => {
+      state.cartLoading = true;
+      state.error = null;
+    },
+    removeItemFromCartSuccess: (state, action) => {
+      state.cartLoading = false;
+      state.error = null;
+      console.log("action.payload", action.payload);
+
+      state.cartItems.cartItem = state.cartItems.cartItem.filter(
+        (item) => item._id !== action.payload
+      );
+    },
+    removeItemFromCartFailure: (state, action) => {
+      state.cartLoading = false;
+      state.error = action.payload;
+    },
+    clearCartStart: (state) => {
+      state.cartLoading = true;
+      state.error = null;
+    },
+    clearCartSuccess: (state) => {
+      state.cartLoading = false;
+      state.error = null;
+      state.cartItems = null;
+    },
+    clearCartFailure: (state, action) => {
+      state.cartLoading = false;
       state.error = action.payload;
     },
   },
@@ -32,6 +61,12 @@ export const {
   addToCartFailure,
   addToCartStart,
   addToCartSuccess,
+  removeItemFromCartStart,
+  removeItemFromCartSuccess,
+  removeItemFromCartFailure,
+  clearCartFailure,
+  clearCartStart,
+  clearCartSuccess,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

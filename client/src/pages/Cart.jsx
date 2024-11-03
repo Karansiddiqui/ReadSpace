@@ -4,58 +4,53 @@ import { Link, useNavigate } from "react-router-dom";
 import { CiShoppingCart } from "react-icons/ci";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCartSuccess, addToCartFailure } from "../redux/cart/cartSlice.js";
+import {
+  addToCartSuccess,
+  addToCartFailure,
+  removeItemFromCartStart,
+  removeItemFromCartSuccess,
+  removeItemFromCartFailure,
+  clearCartStart,
+  clearCartSuccess,
+} from "../redux/cart/cartSlice";
 
 const Cart = () => {
   // const [loading, setLoading] = useState(true);
   const [currentPrices, setCurrentPrices] = useState({});
   const [totalAmount, setTotalAmount] = useState(0);
-  const { currentUser, loading } = useSelector(
-    (state) => state.user
-  );
+  const { currentUser, loading } = useSelector((state) => state.user);
 
   const { cartItems } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // console.log("Cart Items:", cartItems);
-  // console.log(currentPrices);
-
   useEffect(() => {
-    
     const fetchCartItems = async () => {
       try {
-        const response = await fetch("/api/cart/get");
-        const res = await response.json();
+        if (currentUser) {
+          const response = await fetch("/api/cart/get");
+          const res = await response.json();
 
-        if (!res) {
-          // setLoading(true);
-          return;
-        }
-        // console.log("Cart Items:", res.data.cartItem);
-
-        if (res.success) {
-          console.log("here", res.data);
-          console.log("here", cartItems);
-          dispatch(addToCartSuccess(res.data));
-          localStorage.removeItem("book");
-          const initialPrices = {};
-          res.data.cartItem.forEach((item) => {
-            initialPrices[item._id] = {
-              purchaseType: item.purchaseType,
-              rentDays: item.rentDays,
-              price: item.price,
-            };
-          });
-          setCurrentPrices(initialPrices);
-          // setLoading(false);
-          // dispatch(addToCartSuccess(res.data));
+          if (res.success) {
+            dispatch(addToCartSuccess(res.data));
+            localStorage.removeItem("book");
+            const initialPrices = {};
+            res.data.cartItem.forEach((item) => {
+              initialPrices[item._id] = {
+                purchaseType: item.purchaseType,
+                rentDays: item.rentDays,
+                price: item.price,
+              };
+            });
+            setCurrentPrices(initialPrices);
+          } else {
+            dispatch(addToCartFailure());
+            toast.error(res.message);
+          }
         } else {
           const initialPrices = {};
           cartItems.cartItem.forEach((item) => {
-            console.log(item);
-
             initialPrices[item._id] = {
               purchaseType: item.purchaseType,
               rentDays: 1,
@@ -63,12 +58,9 @@ const Cart = () => {
             };
           });
           setCurrentPrices(initialPrices);
-          // setLoading(false);
-          // dispatch(addToCartSuccess(res.data));
         }
       } catch (error) {
         console.log("Error fetching cart items:", error);
-        // setLoading(false);
         dispatch(addToCartFailure(error.message));
       }
     };
@@ -107,90 +99,80 @@ const Cart = () => {
 
   const handleRemoveCartItem = async (cartItemId, bookId) => {
     try {
-      const response = await fetch(`/api/cart/removeItemFromCart`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cartItemId }),
-      });
+      dispatch(removeItemFromCartStart());
 
-      const res = await response.json();
-      console.log("here");
+      // If the user is logged in, attempt to remove the item from the server
 
-      if (!res.success) {
-        dispatch(
-          addToCartSuccess({
-            cartItem: cartItems.cartItem.filter(
-              (item) => item._id !== cartItemId
-            ),
-          })
-        );
-
-        let bookArray = localStorage.getItem("book");
-        if (bookArray) {
-          bookArray = JSON.parse(bookArray);
-          bookArray = bookArray.filter((book) => book !== bookId);
-
-          console.log("bookArray", bookArray);
-
-          localStorage.setItem("book", JSON.stringify(bookArray));
-        }
-        return;
-      }
-
-      toast.success(res.message);
-
-      if (cartItems.cartItem?.length <= 1) {
-        console.log("Cart is empty. Resetting cart state.");
-        dispatch(addToCartSuccess({ cartItem: [] }));
-        setCurrentPrices({});
-        console.log(
-          "Cart Items:",
-          cartItems.cartItem,
-          "Prices:",
-          currentPrices
-        );
-        return;
-      }
-
-      dispatch(
-        addToCartSuccess({
-          cartItem: cartItems.cartItem.filter(
-            (item) => item._id !== cartItemId
-          ),
-        })
+      // Update local cart items
+      const updatedCartItems = cartItems?.cartItem?.filter(
+        (item) => item._id !== cartItemId
       );
+      console.log("Updated cart items:", updatedCartItems, cartItemId, bookId);
 
+      // Clear the cart if it's empty
+      if (!updatedCartItems || updatedCartItems.length === 0) {
+        clearCart();
+        return;
+      }
+
+      dispatch(removeItemFromCartSuccess(cartItemId));
+
+      // Update current prices
       setCurrentPrices((prev) => {
         const updatedPrices = { ...prev };
         delete updatedPrices[cartItemId];
         return updatedPrices;
       });
+
+      // Update local storage for books
+      let bookArray = JSON.parse(localStorage.getItem("book")) || [];
+      bookArray = bookArray.filter((book) => book !== bookId);
+      localStorage.setItem("book", JSON.stringify(bookArray));
+
+      if (currentUser) {
+        const response = await fetch(`/api/cart/removeItemFromCart`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ cartItemId }),
+        });
+
+        const res = await response.json();
+
+        // Check if the removal was successful
+        if (!res.success) {
+          throw new Error(res.message);
+        }
+
+        toast.success(res.message);
+      }
     } catch (error) {
       console.error("Error removing cart item:", error);
+      toast.error("Failed to remove item from cart."); // Notify the user in case of an error
     }
   };
-  console.log("Cart Items:", cartItems?.cartItem, "Prices:", currentPrices);
 
   const clearCart = async () => {
     try {
-      const response = await fetch(`/api/cart/clearCart`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const res = await response.json();
-
-      if (res.success) {
-        toast.success(res.message);
-        dispatch(addToCartSuccess({ cartItem: [] }));
+      if (currentUser) {
+        dispatch(clearCartSuccess());
         setCurrentPrices({});
+        const response = await fetch(`/api/cart/clearCart`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+          toast.success(res.message);
+        }
       } else {
-        toast.success(res.message);
-        dispatch(addToCartSuccess({ cartItem: [] }));
+        !currentUser && toast.success("Item removed successfully");
+        dispatch(clearCartSuccess());
         setCurrentPrices({});
         localStorage.removeItem("book");
       }
@@ -207,7 +189,15 @@ const Cart = () => {
     return <ReactSpinner />;
   }
 
-  if (cartItems.cartItem?.length < 1) {
+  const handleCheckout = () => {
+    if (!currentUser) {
+      toast.error("Please login to checkout");
+      navigate("/sign-in");
+      return;
+    }
+  };
+
+  if (!cartItems) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
         <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 md:text-4xl lg:text-5xl mb-4">
@@ -224,14 +214,6 @@ const Cart = () => {
       </div>
     );
   }
-
-  const handleCheckout = () => {
-    if (!currentUser) {
-      toast.error("Please login to checkout");
-      navigate("/sign-in");
-      return;
-    }
-  };
 
   return (
     <div className="flex flex-col items-center md:items-start md:flex-row md:min-h-[70vh] max-w-7xl mx-auto p-4 lg:space-y-0 md:space-x-8 transition-all duration-300 ease-in-out">
