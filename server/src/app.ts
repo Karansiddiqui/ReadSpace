@@ -18,7 +18,7 @@ app.use(
   })
 );
 
-// const __dirname = path.resolve();
+const __dirname = path.resolve();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
@@ -32,7 +32,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/transaction", userTransaction);
 app.use("/api/cart", userCartRoutes);
 
-// app.use(express.static(path.join(__dirname, "/client/dist")));
+app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.use("*", (req, res) => {
   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
