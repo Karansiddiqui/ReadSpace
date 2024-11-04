@@ -197,7 +197,7 @@ const Cart = () => {
     }
   };
 
-  if (!cartItems) {
+  if (!cartItems || cartItems.cartItem.length < 1) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
         <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 md:text-4xl lg:text-5xl mb-4">
