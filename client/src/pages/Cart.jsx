@@ -4,7 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { CiShoppingCart } from "react-icons/ci";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
+import { Spinner } from "flowbite-react";
 import {
+  addToCartStart,
   addToCartSuccess,
   addToCartFailure,
   removeItemFromCartStart,
@@ -20,57 +22,17 @@ const Cart = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const { currentUser, loading } = useSelector((state) => state.user);
 
-  const { cartItems } = useSelector((state) => state.cart);
+  const { cartItems, cartLoading } = useSelector((state) => state.cart);
+
+  const [checkOutStart, setCheckOutStart] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        if (currentUser) {
-          const response = await fetch("/api/cart/get");
-          const res = await response.json();
-
-          if (res.success) {
-            dispatch(addToCartSuccess(res.data));
-            localStorage.removeItem("book");
-            const initialPrices = {};
-            res.data.cartItem.forEach((item) => {
-              initialPrices[item._id] = {
-                purchaseType: item.purchaseType,
-                rentDays: item.rentDays,
-                price: item.price,
-              };
-            });
-            setCurrentPrices(initialPrices);
-          } else {
-            dispatch(addToCartFailure());
-            toast.error(res.message);
-          }
-        } else {
-          const initialPrices = {};
-          cartItems.cartItem.forEach((item) => {
-            initialPrices[item._id] = {
-              purchaseType: item.purchaseType,
-              rentDays: 1,
-              price: item.price,
-            };
-          });
-          setCurrentPrices(initialPrices);
-        }
-      } catch (error) {
-        console.log("Error fetching cart items:", error);
-        dispatch(addToCartFailure(error.message));
-      }
-    };
-
-    fetchCartItems();
-  }, []);
-
   const updateRentDays = async (itemId, newRentDays, purchaseType) => {
     try {
-      await fetch(`/api/cart/update/${itemId}`, {
+      dispatch(addToCartStart());
+      const response = await fetch(`/api/cart/update/${itemId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +44,11 @@ const Cart = () => {
         }),
       });
 
-      // dispatch(addToCartSuccess(cartItems));
+      const res = await response.json();
+
+      if (res.success) {
+        dispatch(addToCartSuccess(res.data));
+      }
     } catch (error) {
       console.log("Error updating rent days:", error);
     }
@@ -101,15 +67,11 @@ const Cart = () => {
     try {
       dispatch(removeItemFromCartStart());
 
-      // If the user is logged in, attempt to remove the item from the server
-
-      // Update local cart items
       const updatedCartItems = cartItems?.cartItem?.filter(
         (item) => item._id !== cartItemId
       );
       console.log("Updated cart items:", updatedCartItems, cartItemId, bookId);
 
-      // Clear the cart if it's empty
       if (!updatedCartItems || updatedCartItems.length === 0) {
         clearCart();
         return;
@@ -117,14 +79,12 @@ const Cart = () => {
 
       dispatch(removeItemFromCartSuccess(cartItemId));
 
-      // Update current prices
       setCurrentPrices((prev) => {
         const updatedPrices = { ...prev };
         delete updatedPrices[cartItemId];
         return updatedPrices;
       });
 
-      // Update local storage for books
       let bookArray = JSON.parse(localStorage.getItem("book")) || [];
       bookArray = bookArray.filter((book) => book !== bookId);
       localStorage.setItem("book", JSON.stringify(bookArray));
@@ -140,7 +100,6 @@ const Cart = () => {
 
         const res = await response.json();
 
-        // Check if the removal was successful
         if (!res.success) {
           throw new Error(res.message);
         }
@@ -182,6 +141,50 @@ const Cart = () => {
   };
 
   useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        dispatch(addToCartStart());
+        if (currentUser) {
+          const response = await fetch("/api/cart/get");
+          const res = await response.json();
+
+          if (res.success) {
+            dispatch(addToCartSuccess(res.data));
+            localStorage.removeItem("book");
+            const initialPrices = {};
+            res.data.cartItem.forEach((item) => {
+              initialPrices[item._id] = {
+                purchaseType: item.purchaseType,
+                rentDays: item.rentDays,
+                price: item.price,
+              };
+            });
+            setCurrentPrices(initialPrices);
+          } else {
+            dispatch(addToCartFailure());
+            toast.error(res.message);
+          }
+        } else {
+          const initialPrices = {};
+          cartItems.cartItem.forEach((item) => {
+            initialPrices[item._id] = {
+              purchaseType: item.purchaseType,
+              rentDays: 1,
+              price: item.price,
+            };
+          });
+          setCurrentPrices(initialPrices);
+        }
+      } catch (error) {
+        console.log("Error fetching cart items:", error);
+        dispatch(addToCartFailure(error.message));
+      }
+    };
+
+    fetchCartItems();
+  }, []);
+
+  useEffect(() => {
     calculateTotalAmount();
   }, [currentPrices, handleRemoveCartItem]);
 
@@ -189,18 +192,44 @@ const Cart = () => {
     return <ReactSpinner />;
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    console.log("Checkout clicked");
+
+    setCheckOutStart(true);
+
     if (!currentUser) {
       toast.error("Please login to checkout");
       navigate("/sign-in");
       return;
     }
+
+    const response = await fetch("/api/payment/stripe-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cartItems }),
+    });
+
+    const result = await response.json();
+
+    console.log("Result:", result);
+    
+
+    if (!result.success) {
+      toast.error(result.message);
+      setCheckOutStart(false);
+      return;
+    } else {
+      setCheckOutStart(false);
+      window.location.href = result.data.url;
+    }
   };
 
-  if (!cartItems || cartItems.cartItem.length < 1) {
+  if (!cartItems || cartItems?.cartItem.length < 1) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
-        <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 md:text-4xl lg:text-5xl mb-4">
+        <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-200 md:text-4xl lg:text-5xl mb-4">
           Cart is empty
         </h1>
         <Link
@@ -210,20 +239,20 @@ const Cart = () => {
           Get a Book
         </Link>
 
-        <CiShoppingCart className="text-5xl text-gray-400 dark:text-gray-300" />
+        <CiShoppingCart className="text-5xl text-gray-400 dark:text-gray-200" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center md:items-start md:flex-row md:min-h-[70vh] max-w-7xl mx-auto p-4 lg:space-y-0 md:space-x-8 transition-all duration-300 ease-in-out">
-      <div className="flex-[2.5] flex flex-col gap-6 transition-all duration-300 ease-in-out">
+    <div className="flex flex-col items-center md:items-start md:flex-row md:min-h-[70vh] max-w-7xl mx-auto p-4 lg:space-y-0 md:space-x-8 transition-all duration-200 ease-in-out">
+      <div className="flex-[2.5] flex flex-col gap-6 transition-all duration-200 ease-in-out">
         {cartItems?.cartItem.map((item) => {
           const { rentDays } = currentPrices[item._id] || { rentDays: 1 };
           return (
             <div
               key={item._id}
-              className="relative border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm p-4 bg-white dark:bg-gray-800 transition-all duration-300 ease-in-out"
+              className="relative border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4 bg-white dark:bg-gray-800 transition-all duration-200 ease-in-out"
             >
               <i
                 className="ri-close-line absolute right-2 top-[3px] text-gray-400 cursor-pointer"
@@ -233,24 +262,24 @@ const Cart = () => {
                 {/* Book Cover */}
                 <Link
                   to={`/book-detail/${item.bookId._id}`}
-                  className="flex-shrink-0 transition-all duration-300 ease-in-out"
+                  className="flex-shrink-0 transition-all duration-200 ease-in-out"
                 >
                   <img
                     src={item.bookId.cover}
-                    className="w-24 h-36 object-cover rounded-md shadow-md transition-all duration-300 ease-in-out"
+                    className="w-24 h-36 object-cover rounded-md shadow-md transition-all duration-200 ease-in-out"
                     alt={`${item.bookId.bookName} Cover`}
                   />
                 </Link>
 
                 {/* Book Details and Actions */}
-                <div className="ml-6 flex-1 text-left transition-all duration-300 ease-in-out">
-                  <h2 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2 line-clamp-1 transition-all duration-300 ease-in-out">
+                <div className="ml-6 flex-1 text-left transition-all duration-200 ease-in-out">
+                  <h2 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-1 transition-all duration-200 ease-in-out">
                     {item.bookId.bookName}
                   </h2>
 
                   {/* Pricing Options */}
-                  <div className="flex flex-row gap-4 transition-all duration-300 ease-in-out">
-                    <div className="flex flex-col sm:flex-row items-center transition-all duration-300 ease-in-out">
+                  <div className="flex flex-row gap-4 transition-all duration-200 ease-in-out">
+                    <div className="flex flex-col sm:flex-row items-center transition-all duration-200 ease-in-out">
                       {/* Rent Button and Controls */}
                       <button
                         onClick={() => {
@@ -269,10 +298,10 @@ const Cart = () => {
 
                           updateRentDays(item._id, rentDays, "rent");
                         }}
-                        className={`px-3 md:px-4 text-xs lg:text-base py-2  rounded-lg focus:outline-none transition-colors duration-300 ${
+                        className={`px-3 md:px-4 text-xs lg:text-base py-2  rounded-lg focus:outline-none transition-colors duration-200 ${
                           currentPrices[item._id]?.purchaseType === "rent"
                             ? "bg-red-500 text-white"
-                            : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                         }`}
                       >
                         Rent Rs.{item.bookId.rentPerDay}/day
@@ -299,7 +328,7 @@ const Cart = () => {
                                   updateRentDays(item._id, newRentDays);
                                 }
                               }}
-                              className="text-lg font-semibold px-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-300"
+                              className="text-lg font-semibold px-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200"
                             >
                               -
                             </button>
@@ -322,7 +351,7 @@ const Cart = () => {
                                 }));
                                 updateRentDays(item._id, newRentDays);
                               }}
-                              className="w-12 h-8 text-center dark:bg-gray-800 text-sm lg:text-base border border-gray-300 dark:border-gray-600 rounded-lg mx-2 transition-all duration-300"
+                              className="w-12 h-8 text-center dark:bg-gray-800 text-sm lg:text-base border border-gray-200 dark:border-gray-600 rounded-lg mx-2 transition-all duration-200"
                             />
 
                             <button
@@ -339,7 +368,7 @@ const Cart = () => {
                                 }));
                                 updateRentDays(item._id, newRentDays, "rent");
                               }}
-                              className="text-lg font-semibold px-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-300"
+                              className="text-lg font-semibold px-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200"
                             >
                               +
                             </button>
@@ -361,10 +390,10 @@ const Cart = () => {
                         }));
                         updateRentDays(item._id, 1, "buy");
                       }}
-                      className={`px-4 text-xs lg:text-base py-2 rounded-lg focus:outline-none transition-colors duration-300 ${
+                      className={`px-4 text-xs lg:text-base py-2 rounded-lg focus:outline-none transition-colors duration-200 ${
                         currentPrices[item._id]?.purchaseType === "buy"
                           ? "bg-green-500 text-white"
-                          : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                          : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                       }`}
                     >
                       Buy Rs.{item.bookId.oneTimePrice}
@@ -372,8 +401,8 @@ const Cart = () => {
                   </div>
 
                   {/* Current Selection Summary */}
-                  <div className="mt-4 transition-all duration-300 ease-in-out">
-                    <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
+                  <div className="mt-4 transition-all duration-200 ease-in-out">
+                    <span className="text-gray-700 dark:text-gray-200 text-sm sm:text-base">
                       {currentPrices[item._id]?.purchaseType === "rent"
                         ? `Rent for ${
                             currentPrices[item._id]?.rentDays
@@ -389,19 +418,19 @@ const Cart = () => {
       </div>
 
       {/* Order Summary */}
-      <div className="md:flex-1 max-w-[350px] lg:w-1/3 h-fit bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg mt-10 md:mt-0 shadow-sm p-6 transition-all duration-300 ease-in-out">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+      <div className="md:flex-1 max-w-[350px] lg:w-1/3 h-fit bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mt-10 md:mt-0 shadow-sm p-6 transition-all duration-200 ease-in-out">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
           Order Summary
         </h1>
         <div className="flex justify-between mb-4">
-          <p className="text-gray-700 dark:text-gray-300">Total Items:</p>
-          <p className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+          <p className="text-gray-700 dark:text-gray-200">Total Items:</p>
+          <p className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200">
             {cartItems.cartItem.length}
           </p>
         </div>
         <div className="flex justify-between mb-6">
-          <p className="text-gray-700 dark:text-gray-300">Total Price:</p>
-          <p className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+          <p className="text-gray-700 dark:text-gray-200">Total Price:</p>
+          <p className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200">
             Rs. {totalAmount}
           </p>
         </div>
@@ -410,15 +439,15 @@ const Cart = () => {
           <button
             type="button"
             onClick={clearCart}
-            className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-300 text-center text-xs lg:text-base"
+            className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200 text-center text-xs lg:text-base"
           >
             <span className="">Clear Cart</span>
           </button>
           <button
             onClick={() => handleCheckout()}
-            className="w-full sm:w-auto bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 text-center text-xs lg:text-base"
+            className="w-full sm:w-auto bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200 text-center text-xs lg:text-base"
           >
-            <span className="">Checkout</span>
+            {checkOutStart ? <Spinner /> : <span className="">Checkout</span>}
           </button>
         </div>
       </div>

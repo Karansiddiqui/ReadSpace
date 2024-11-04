@@ -10,6 +10,7 @@ export interface IUser extends Document {
   isAdmin: boolean;
   isPasswordCorrect(password: string): Promise<boolean>;
   generateAccessToken(): string;
+  customerStripeId: string;
 }
 
 const userSchema: Schema<IUser> = new Schema(
@@ -19,6 +20,10 @@ const userSchema: Schema<IUser> = new Schema(
     password: { type: String, required: true },
     fullName: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
+    customerStripeId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

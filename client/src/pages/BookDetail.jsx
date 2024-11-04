@@ -79,15 +79,17 @@ const BookDetails = () => {
         }),
       });
 
-      const data = await response.json();
-      dispatch(addToCartSuccess({ cartItem: data.data.cartItem }));
+      const res = await response.json();
+      console.log(res);
+
+      dispatch(addToCartSuccess(res.data));
 
       if (response.ok) {
-        toast.success(data.message);
+        toast.success(res.message);
         return;
-      } else if (!data.success && currentUser) {
+      } else if (!res.success && currentUser) {
         dispatch(addToCartFailure());
-        toast.error(data.message);
+        toast.error(res.message);
       }
     } else {
       let updatedCartItems;

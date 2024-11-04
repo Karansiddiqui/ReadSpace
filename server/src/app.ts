@@ -7,6 +7,7 @@ import { ApiError } from "./utils/ApiError.js";
 import userRoutes from "./routes/user.route.js";
 import userTransaction from "./routes/transaction.route.js";
 import userCartRoutes from "./routes/cart.route.js";
+import userPaymentRoutes from "./routes/payment.route.js";
 import path from "path";
 
 const app: Application = express();
@@ -31,6 +32,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/transaction", userTransaction);
 app.use("/api/cart", userCartRoutes);
+app.use("/api/payment", userPaymentRoutes);
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 

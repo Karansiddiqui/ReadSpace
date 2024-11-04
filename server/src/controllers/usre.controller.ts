@@ -4,6 +4,7 @@ import User from "../models/user.schema.js";
 import { ApiResponse } from "../utils/ApiResolve.js";
 import { ApiError } from "../utils/ApiError.js";
 import Book from "../models/book.schema.js";
+import { stripe } from "../utils/stripe.js";
 
 // Register User
 const registerUser = asyncHandler(async (req: Request, res: Response) => {
@@ -34,12 +35,23 @@ const registerUser = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(409, "User with email already exists");
   }
 
+  const customer = await stripe.customers.create(
+    {
+      name: fullName,
+      email,
+    },
+    {
+      apiKey: process.env.STRIPE_SECRET_KEY,
+    }
+  );
+
   const user = await User.create({
     username: username.toLowerCase(),
     email: email.toLowerCase(),
     password,
     fullName,
     isAdmin,
+    customerStripeId: customer.id,
   });
 
   const createdUser = await User.findById(user._id).select("-password");
@@ -74,9 +86,10 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const accessToken = user.generateAccessToken();
   const loggedInUser = await User.findById(user._id).select("-password");
 
-  const cookieOptions: { httpOnly: boolean; secure: boolean } = {
+  const cookieOptions: { httpOnly: boolean; secure: boolean; expires: Date } = {
     httpOnly: true,
     secure: true,
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
   };
 
   return res

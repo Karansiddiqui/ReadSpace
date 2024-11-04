@@ -79,7 +79,7 @@ export const updateCartItem = asyncHandler(
     if (!cartItem) {
       throw new ApiError(404, "Cart item not found");
     }
-
+ 
     const book = await Book.findById(cartItem.bookId);
     if (!book) {
       throw new ApiError(404, "Book not found");
@@ -118,9 +118,10 @@ export const updateCartItem = asyncHandler(
       await cart.save();
     }
 
+
     res
       .status(200)
-      .json(new ApiResponse(200, cartItem, "Cart item updated successfully"));
+      .json(new ApiResponse(200, cart, "Cart item updated successfully"));
   }
 );
 
